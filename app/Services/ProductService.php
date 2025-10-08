@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Contracts\ProductServiceInterface;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class ProductService
+class ProductService implements ProductServiceInterface
 {
     public function getAllProducts(Request $request)
     {

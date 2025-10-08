@@ -32,8 +32,14 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('website.contac
 Route::post('/contact', [HomeController::class, 'contactSubmit'])->name('website.contact.submit');
 
 // Resource Routes
-Route::resource('products', ProductController::class)->only(['index', 'show']);
-Route::resource('categories', CategoryController::class)->only(['index', 'show']);
+Route::resource('products', ProductController::class)->only(['index', 'show'])->names([
+    'index' => 'website.products.index',
+    'show' => 'website.products.show'
+]);
+Route::resource('categories', CategoryController::class)->only(['index', 'show'])->names([
+    'index' => 'website.categories.index',
+    'show' => 'website.categories.show'
+]);
 
 // Additional Product Routes
 Route::get('/products/category/{category}', [ProductController::class, 'byCategory'])->name('website.products.category');
@@ -62,14 +68,14 @@ Route::prefix('wishlist')->name('website.wishlist.')->group(function () {
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [AuthController::class, 'reset'])->name('password.update');
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('website.login');
+    Route::post('/login', [AuthController::class, 'login'])->name('website.login.submit');
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('website.register');
+    Route::post('/register', [AuthController::class, 'register'])->name('website.register.submit');
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('website.password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('website.password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('website.password.reset');
+    Route::post('/reset-password', [AuthController::class, 'reset'])->name('website.password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -116,6 +122,18 @@ Route::prefix('wheel')->name('website.wheel.')->group(function () {
 
 // Quick Order
 Route::post('/quick-order', [QuickOrderController::class, 'store'])->name('website.quick-order');
+
+// Newsletter
+Route::post('/newsletter/subscribe', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'email' => 'required|email'
+    ]);
+    
+    // Here you would typically save the email to database
+    // For now, we'll just return success
+    
+    return redirect()->back()->with('success', __('website.newsletter_subscribed_successfully'));
+})->name('website.newsletter.subscribe');
 
 // Language Switching
 Route::get('/locale/{locale}', function ($locale) {

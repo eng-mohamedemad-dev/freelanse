@@ -18,7 +18,6 @@ class AdminSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@ecommerce.com',
             'password' => Hash::make('admin123'),
-            'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
@@ -27,7 +26,6 @@ class AdminSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'user@ecommerce.com',
             'password' => Hash::make('user123'),
-            'role' => 'customer',
             'email_verified_at' => now(),
         ]);
     }

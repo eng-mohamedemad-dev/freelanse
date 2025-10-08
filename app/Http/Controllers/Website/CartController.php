@@ -3,136 +3,83 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $cart = Session::get('cart', collect());
-        $cartItems = collect();
-        
-        foreach ($cart as $item) {
-            $product = Product::find($item['product_id']);
-            if ($product) {
-                $cartItems->push([
-                    'product' => $product,
-                    'quantity' => $item['quantity'],
-                    'total' => $product->final_price * $item['quantity']
-                ]);
-            }
-        }
-        
-        $subtotal = $cartItems->sum('total');
-        $tax = $subtotal * 0.1; // 10% tax
-        $shipping = $subtotal > 100 ? 0 : 10; // Free shipping over $100
-        $total = $subtotal + $tax + $shipping;
-        
-        return view('website.cart.index', compact('cartItems', 'subtotal', 'tax', 'shipping', 'total'));
+        $cart = session('cart', collect());
+        return view('website.cart.index', compact('cart'));
     }
 
-    /**
-     * Add item to cart
-     */
     public function add(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        $product = Product::findOrFail($request->product_id);
+        $productId = $request->product_id;
+        $quantity = $request->quantity ?? 1;
         
-        if ($product->stock < $request->quantity) {
-            return response()->json([
-                'success' => false,
-                'message' => 'الكمية المطلوبة غير متوفرة في المخزون'
-            ]);
-        }
-
-        $cart = Session::get('cart', collect());
-        $existingItem = $cart->firstWhere('product_id', $request->product_id);
+        $cart = session('cart', collect());
         
-        if ($existingItem) {
-            $existingItem['quantity'] += $request->quantity;
+        if ($cart->has($productId)) {
+            $cart[$productId] += $quantity;
         } else {
-            $cart->push([
-                'product_id' => $request->product_id,
-                'quantity' => $request->quantity,
-            ]);
+            $cart[$productId] = $quantity;
         }
         
-        Session::put('cart', $cart);
+        session(['cart' => $cart]);
         
         return response()->json([
             'success' => true,
-            'message' => 'تم إضافة المنتج إلى السلة',
+            'message' => __('website.product_added_to_cart'),
             'cart_count' => $cart->count()
         ]);
     }
 
-    /**
-     * Update cart item
-     */
     public function update(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        $cart = Session::get('cart', collect());
-        $item = $cart->firstWhere('product_id', $request->product_id);
+        $productId = $request->product_id;
+        $quantity = $request->quantity;
         
-        if ($item) {
-            $item['quantity'] = $request->quantity;
-            Session::put('cart', $cart);
+        $cart = session('cart', collect());
+        
+        if ($quantity <= 0) {
+            $cart->forget($productId);
+        } else {
+            $cart[$productId] = $quantity;
         }
         
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تحديث السلة'
-        ]);
-    }
-
-    /**
-     * Remove item from cart
-     */
-    public function remove(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-        ]);
-
-        $cart = Session::get('cart', collect());
-        $cart = $cart->reject(function ($item) use ($request) {
-            return $item['product_id'] == $request->product_id;
-        });
-        
-        Session::put('cart', $cart);
+        session(['cart' => $cart]);
         
         return response()->json([
             'success' => true,
-            'message' => 'تم إزالة المنتج من السلة',
+            'message' => __('website.cart_updated'),
             'cart_count' => $cart->count()
         ]);
     }
 
-    /**
-     * Clear cart
-     */
-    public function clear()
+    public function remove(Request $request)
     {
-        Session::forget('cart');
+        $productId = $request->product_id;
+        
+        $cart = session('cart', collect());
+        $cart->forget($productId);
+        
+        session(['cart' => $cart]);
         
         return response()->json([
             'success' => true,
-            'message' => 'تم مسح السلة'
+            'message' => __('website.product_removed_from_cart'),
+            'cart_count' => $cart->count()
+        ]);
+    }
+
+    public function clear()
+    {
+        session()->forget('cart');
+        
+        return response()->json([
+            'success' => true,
+            'message' => __('website.cart_cleared')
         ]);
     }
 }

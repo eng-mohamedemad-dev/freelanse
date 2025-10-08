@@ -169,6 +169,7 @@ return [
     'newsletter_description' => 'احصل على آخر العروض والأخبار',
     'email_placeholder' => 'أدخل بريدك الإلكتروني',
     'subscribe' => 'اشترك',
+    'newsletter_subscribed_successfully' => 'تم الاشتراك في النشرة الإخبارية بنجاح',
     'view_details' => 'عرض التفاصيل',
     'no_products' => 'لا توجد منتجات',
     'no_categories' => 'لا توجد فئات',

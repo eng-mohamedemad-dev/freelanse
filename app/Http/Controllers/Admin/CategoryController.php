@@ -8,44 +8,35 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $categories = Category::with('parent')->paginate(20);
+        
         return view('admin.categories.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $parentCategories = Category::whereNull('parent_id')->get();
-        return view('admin.categories.create', compact('parentCategories'));
+        $categories = Category::active()->root()->get();
+        
+        return view('admin.categories.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|max:2048',
             'status' => 'required|in:active,inactive',
+            'parent_id' => 'nullable|exists:categories,id',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $data = $request->all();
         
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('uploads/categories', $filename, 'public');
-            $data['image'] = $path;
+            $data['image'] = $request->file('image')->store('uploads/categories', 'public');
         }
 
         Category::create($data);
@@ -54,52 +45,33 @@ class CategoryController extends Controller
             ->with('success', __('admin.category_created_successfully'));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Category $category)
     {
-        $category->load(['parent', 'children', 'products']);
         return view('admin.categories.show', compact('category'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Category $category)
     {
-        $parentCategories = Category::whereNull('parent_id')
-            ->where('id', '!=', $category->id)
-            ->get();
+        $categories = Category::active()->root()->where('id', '!=', $category->id)->get();
         
-        return view('admin.categories.edit', compact('category', 'parentCategories'));
+        return view('admin.categories.edit', compact('category', 'categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Category $category)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|max:2048',
             'status' => 'required|in:active,inactive',
+            'parent_id' => 'nullable|exists:categories,id',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $data = $request->all();
         
         if ($request->hasFile('image')) {
-            // Delete old image
-            if ($category->image && \Storage::disk('public')->exists($category->image)) {
-                \Storage::disk('public')->delete($category->image);
-            }
-            
-            $image = $request->file('image');
-            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('uploads/categories', $filename, 'public');
-            $data['image'] = $path;
+            $data['image'] = $request->file('image')->store('uploads/categories', 'public');
         }
 
         $category->update($data);
@@ -108,37 +80,14 @@ class CategoryController extends Controller
             ->with('success', __('admin.category_updated_successfully'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Category $category)
     {
-        // Check if category has products
-        if ($category->products()->count() > 0) {
-            return redirect()->route('admin.categories.index')
-                ->with('error', __('admin.category_has_products'));
-        }
-
-        // Check if category has children
-        if ($category->children()->count() > 0) {
-            return redirect()->route('admin.categories.index')
-                ->with('error', __('admin.category_has_children'));
-        }
-
-        // Delete image
-        if ($category->image && \Storage::disk('public')->exists($category->image)) {
-            \Storage::disk('public')->delete($category->image);
-        }
-
         $category->delete();
 
         return redirect()->route('admin.categories.index')
             ->with('success', __('admin.category_deleted_successfully'));
     }
 
-    /**
-     * Toggle category status
-     */
     public function toggleStatus(Category $category)
     {
         $category->update([
@@ -147,7 +96,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'status' => $category->status
+            'message' => __('admin.category_status_updated_successfully')
         ]);
     }
 }
