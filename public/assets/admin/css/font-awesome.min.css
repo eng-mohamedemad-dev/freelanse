@@ -1,0 +1,31 @@
+/* Font Awesome CSS - Minified version would go here */
+/* For now, we'll create a placeholder */
+.fa {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+}
+
+.fa-dashboard:before { content: "📊"; }
+.fa-shopping-bag:before { content: "🛍️"; }
+.fa-tags:before { content: "🏷️"; }
+.fa-star:before { content: "⭐"; }
+.fa-shopping-cart:before { content: "🛒"; }
+.fa-users:before { content: "👥"; }
+.fa-settings:before { content: "⚙️"; }
+.fa-sign-out:before { content: "🚪"; }
+.fa-search:before { content: "🔍"; }
+.fa-user:before { content: "👤"; }
+.fa-sign-in:before { content: "🔑"; }
+.fa-user-plus:before { content: "👤+"; }
+.fa-heart:before { content: "❤️"; }
+.fa-heart-o:before { content: "🤍"; }
+.fa-phone:before { content: "📞"; }
+.fa-envelope:before { content: "✉️"; }
+.fa-map-marker:before { content: "📍"; }
+.fa-facebook:before { content: "📘"; }
+.fa-twitter:before { content: "🐦"; }
+.fa-instagram:before { content: "📷"; }
+.fa-linkedin:before { content: "💼"; }
