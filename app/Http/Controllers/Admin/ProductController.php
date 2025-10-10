@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
@@ -22,32 +24,32 @@ class ProductController extends Controller
     {
         $products = $this->productService->getAllProducts($request);
         $categories = Category::active()->get();
-        $brands = Brand::active()->get();
 
-        return view('admin.products.index', compact('products', 'categories', 'brands'));
+        // If AJAX request, return JSON response
+        if ($request->ajax() || $request->has('ajax')) {
+            return response()->json([
+                'html' => view('admin.products.partials.table', compact('products'))->render(),
+                'count' => $products->count()
+            ]);
+        }
+
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
         $categories = Category::active()->get();
-        $brands = Brand::active()->get();
 
-        return view('admin.products.create', compact('categories', 'brands'));
+        return view('admin.products.create', compact('categories'));
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
-            'stock' => 'required|integer|min:0',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
 
-        $data = $request->all();
+        // إضافة الحالة تلقائياً كنشط
+        $data = $request->validated();
+        $data['status'] = 'active';
+        
         $product = $this->productService->createProduct($data);
 
         return redirect()->route('admin.products.index')
@@ -64,24 +66,22 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::active()->get();
-        $brands = Brand::active()->get();
 
-        return view('admin.products.edit', compact('product', 'categories', 'brands'));
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
-            'stock' => 'required|integer|min:0',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
 
-        $data = $request->all();
+        $data = $request->validated();
+        
+        // Handle removed images
+        if ($request->has('removed_images')) {
+            $currentImages = $product->images ?? [];
+            $removedImages = $request->removed_images;
+            $data['images'] = array_diff($currentImages, $removedImages);
+        }
+        
         $this->productService->updateProduct($product, $data);
 
         return redirect()->route('admin.products.index')

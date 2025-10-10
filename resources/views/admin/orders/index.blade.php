@@ -1,251 +1,634 @@
 @extends('admin.layouts.app')
 
 @section('title', __('admin.orders'))
+@section('page-title', __('admin.orders'))
 
 @section('content')
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">{{ __('admin.orders') }}</h3>
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- Filters -->
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <select class="form-select" id="status-filter">
-                            <option value="">{{ __('admin.all_status') }}</option>
-                            <option value="pending">{{ __('admin.pending') }}</option>
-                            <option value="processing">{{ __('admin.processing') }}</option>
-                            <option value="shipped">{{ __('admin.shipped') }}</option>
-                            <option value="delivered">{{ __('admin.delivered') }}</option>
-                            <option value="cancelled">{{ __('admin.cancelled') }}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="date" class="form-control" id="date-from" placeholder="{{ __('admin.date_from') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="date" class="form-control" id="date-to" placeholder="{{ __('admin.date_to') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" id="search" placeholder="{{ __('admin.search') }}">
-                    </div>
-                </div>
+<div class="flex items-center flex-wrap justify-between gap20 mb-27">
+    <h3>{{ __('admin.orders') }}</h3>
+    <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+        <li>
+            <a href="{{ route('admin.dashboard') }}">
+                <div class="text-tiny">{{ __('admin.dashboard') }}</div>
+            </a>
+        </li>
+        <li>
+            <i class="icon-chevron-right"></i>
+        </li>
+        <li>
+                <div class="text-tiny">{{ __('admin.orders') }}</div>
+        </li>
+    </ul>
+</div>
 
-                <!-- Orders Table -->
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>{{ __('admin.order_number') }}</th>
-                                <th>{{ __('admin.customer_name') }}</th>
-                                <th>{{ __('admin.customer_phone') }}</th>
-                                <th>{{ __('admin.order_date') }}</th>
-                                <th>{{ __('admin.order_total') }}</th>
-                                <th>{{ __('admin.order_status') }}</th>
-                                <th>{{ __('admin.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($orders as $order)
-                            <tr>
-                                <td>#{{ $order->order_number }}</td>
-                                <td>{{ $order->customer_name }}</td>
-                                <td>{{ $order->customer_phone }}</td>
-                                <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
-                                <td>${{ number_format($order->total_amount, 2) }}</td>
-                                <td>
-                                    <span class="badge badge-{{ $order->status == 'pending' ? 'warning' : ($order->status == 'delivered' ? 'success' : ($order->status == 'cancelled' ? 'danger' : 'info')) }}">
-                                        {{ $order->status_label }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.orders.show', $order) }}" 
-                                           class="btn btn-sm btn-info" 
-                                           data-bs-toggle="tooltip" 
-                                           title="{{ __('admin.view') }}">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        
-                                        @if($order->status == 'pending')
-                                        <button type="button" 
-                                                class="btn btn-sm btn-success mark-completed" 
-                                                data-order-id="{{ $order->id }}"
-                                                data-bs-toggle="tooltip" 
-                                                title="{{ __('admin.mark_completed') }}">
-                                            <i class="fa fa-check"></i>
-                                        </button>
-                                        @endif
-                                        
-                                        @if($order->status != 'cancelled' && $order->status != 'delivered')
-                                        <button type="button" 
-                                                class="btn btn-sm btn-danger mark-cancelled" 
-                                                data-order-id="{{ $order->id }}"
-                                                data-bs-toggle="tooltip" 
-                                                title="{{ __('admin.mark_cancelled') }}">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                        @endif
-                                        
-                                        <a href="{{ route('admin.orders.invoice', $order) }}" 
-                                           class="btn btn-sm btn-warning" 
-                                           data-bs-toggle="tooltip" 
-                                           title="{{ __('admin.invoice') }}">
-                                            <i class="fa fa-file-pdf-o"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center">{{ __('admin.no_data') }}</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+<div class="wg-box">
+    <div class="flex items-center justify-between gap10 flex-wrap">
+        <div class="wg-filter flex-grow">
+            <form class="form-search" method="GET" action="{{ route('admin.orders.index') }}">
+                <fieldset class="name">
+                    <input type="text" placeholder="{{ __('admin.search_here') }}" class="search-input" name="search" tabindex="2" value="{{ request('search') }}" aria-required="true" id="order-search">
+                </fieldset>
+                <div class="button-submit">
+                    <button class="" type="submit"><i class="icon-search"></i></button>
                 </div>
-
-                <!-- Pagination -->
-                @if($orders->hasPages())
-                <div class="d-flex justify-content-center">
-                    {{ $orders->links() }}
-                </div>
-                @endif
-            </div>
+            </form>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters-container">
+            <select name="status" class="form-control filter-select" id="status-filter">
+                <option value="">{{ __('admin.all_status') }}</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('admin.pending') }}</option>
+                <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>{{ __('admin.processing') }}</option>
+                <option value="shipped" {{ request('status') == 'shipped' ? 'selected' : '' }}>{{ __('admin.shipped') }}</option>
+                <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>{{ __('admin.delivered') }}</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>{{ __('admin.cancelled') }}</option>
+            </select>
+            
         </div>
     </div>
+    
+    @include('admin.orders.partials.table')
 </div>
 @endsection
 
+@push('styles')
+<style>
+    /* Icon Styling - Unified with Products */
+    .list-icon-function {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    .list-icon-function .item {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .list-icon-function .item i {
+        font-size: 14px;
+    }
+    
+    .list-icon-function .item.eye {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .list-icon-function .item.approve {
+        background: #e8f5e8;
+        color: #2e7d32;
+    }
+    
+    .list-icon-function .item.reject {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    .list-icon-function .item.delete {
+        background: #ffebee;
+        color: #d32f2f;
+        border: none;
+    }
+    
+    .list-icon-function .item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Dark Theme Icons */
+    .dark-theme .list-icon-function .item.eye {
+        background: #1a2332;
+        color: #1976d2;
+    }
+    
+    .dark-theme .list-icon-function .item.approve {
+        background: #1e3a1e;
+        color: #4caf50;
+    }
+    
+    .dark-theme .list-icon-function .item.reject {
+        background: #3d2914;
+        color: #ff9800;
+    }
+    
+    .dark-theme .list-icon-function .item.delete {
+        background: #3a1e1e;
+        color: #f44336;
+    }
+    
+    .dark-theme .list-icon-function .item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .filters-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .filter-select, .date-filter {
+        min-width: 150px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .date-filter {
+        min-width: 140px;
+    }
+    
+    .order-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .order-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .order-status.processing {
+        background: #cce5ff;
+        color: #004085;
+    }
+    
+    .order-status.shipped {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .order-status.delivered {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .order-status.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .list-icon-function {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .list-icon-function .item {
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .list-icon-function .item.eye {
+        background: #007bff;
+        color: white;
+    }
+    
+    .list-icon-function .item.approve {
+        background: #28a745;
+        color: white;
+    }
+    
+    .list-icon-function .item.cancel {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .list-icon-function .item.reject {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .list-icon-function .item.delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .list-icon-function .item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Dark Theme Styles */
+    .dark-theme .filter-select, .dark-theme .date-filter {
+        background: #404040;
+        border-color: #555555;
+        color: #ffffff;
+    }
+    
+    .dark-theme .filter-select:focus, .dark-theme .date-filter:focus {
+        background: #404040;
+        border-color: #007bff;
+        color: #ffffff;
+    }
+    
+    .dark-theme .filters-container {
+        background: transparent;
+    }
+    
+    /* Order Number Styling */
+    .order-number {
+        font-weight: 600;
+        font-size: 14px;
+        color: #007bff;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        min-width: 40px;
+        text-align: center;
+    }
+    
+    .dark-theme .order-number {
+        background: #404040;
+        color: #007bff;
+    }
+    
+    
+    
+    
+    /* Zebra Striping for Tables */
+    .table tbody tr:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+    
+    .table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    
+    .dark-theme .table tbody tr:nth-child(odd) {
+        background-color: #404040;
+    }
+    
+    .dark-theme .table tbody tr:nth-child(even) {
+        background-color: #505050;
+    }
+    
+    /* Sweet Alert Custom Styling */
+    .swal2-popup {
+        line-height: 1.4 !important;
+    }
+    
+    .swal2-title {
+        line-height: 1.3 !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .swal2-content {
+        line-height: 1.4 !important;
+        margin-top: 10px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .swal2-html-container {
+        line-height: 1.4 !important;
+        margin: 10px 0 !important;
+    }
+    
+    .swal2-actions {
+        margin-top: 20px !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mark as completed
-    document.querySelectorAll('.mark-completed').forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            
-            Swal.fire({
-                title: '{{ __("admin.confirm") }}',
-                text: '{{ __("admin.mark_completed_confirmation") }}',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: '{{ __("admin.yes") }}',
-                cancelButtonText: '{{ __("admin.no") }}'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/admin/orders/${orderId}/mark-completed`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: '{{ __("admin.success") }}',
-                                text: data.message,
-                                icon: 'success'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                title: '{{ __("admin.error") }}',
-                                text: data.message,
-                                icon: 'error'
-                            });
-                        }
-                    });
+$(document).ready(function() {
+    console.log('Orders page loaded, initializing search and filter');
+    let searchTimeout;
+    
+    // Initialize event handlers
+    initializeEventHandlers();
+    
+    // Real-time search for orders
+    $('#order-search').on('input', function() {
+        const searchTerm = $(this).val();
+        
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+        
+        // Set new timeout for search
+        searchTimeout = setTimeout(function() {
+            performSearch(searchTerm);
+        }, 300);
+    });
+    
+    function performSearch(searchTerm) {
+        const status = $('#status-filter').val();
+        
+        console.log('Performing search:', searchTerm, 'with status:', status);
+        
+        $.ajax({
+            url: '{{ route("admin.orders.index") }}',
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                search: searchTerm,
+                status: status,
+                ajax: 1
+            },
+            success: function(response) {
+                console.log('Search successful, updating table');
+                console.log('Response:', response);
+                
+                if (response.html) {
+                    console.log('HTML content:', response.html);
+                    
+                    // Update table content directly
+                    $('.table-responsive').html(response.html);
+                    
+                    // Update pagination if exists
+                    if ($(response.html).find('.pagination-wrapper').length > 0) {
+                        $('.pagination-wrapper').html($(response.html).find('.pagination-wrapper').html());
+                    } else {
+                        $('.pagination-wrapper').empty();
+                    }
+                    
+                    // Re-initialize event handlers for new content
+                    initializeEventHandlers();
+                } else {
+                    console.error('No HTML content in response');
                 }
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error('Search failed:', error);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+    }
+    
+    // Function to initialize event handlers
+    function initializeEventHandlers() {
+        // Re-initialize order action handlers
+        $('.approve-order').off('click').on('click', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('order-id');
+            const orderNumber = $(this).data('order-number');
+            // Handle approve action
+        });
+        
+        $('.reject-order').off('click').on('click', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('order-id');
+            const orderNumber = $(this).data('order-number');
+            // Handle reject action
+        });
+        
+        $('.delete-order').off('click').on('click', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('order-id');
+            const orderNumber = $(this).data('order-number');
+            // Handle delete action
+        });
+    }
+    
+    // Filter change handlers
+    $('#status-filter').on('change', function() {
+        const searchTerm = $('#order-search').val();
+        console.log('Filter changed, performing search:', searchTerm, 'with status:', $(this).val());
+        performSearch(searchTerm);
+    });
+    
+    // Handle order status actions
+    $('.approve-order').on('click', function(e) {
+        e.preventDefault();
+        const orderId = $(this).data('order-id');
+        const orderNumber = $(this).data('order-number');
+        
+        Swal.fire({
+            title: '{{ __('admin.approve_confirmation') }}',
+            text: `{{ __('admin.approve_confirmation') }} "${orderNumber}"?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '{{ __('admin.yes') }}',
+            cancelButtonText: '{{ __('admin.cancel') }}',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            width: '500px',
+            padding: '2rem',
+            customClass: {
+                popup: 'swal-wide',
+                title: 'swal-title',
+                content: 'swal-content',
+                confirmButton: 'swal-confirm',
+                cancelButton: 'swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Make AJAX request to approve order
+                $.ajax({
+                    url: `/admin/orders/${orderId}/mark-completed`,
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __('admin.success') }}!',
+                            text: '{{ __('admin.order_approved_successfully') }}',
+                            confirmButtonText: '{{ __('admin.confirm') }}',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ!',
+                            text: 'حدث خطأ أثناء الموافقة على الطلب',
+                            confirmButtonText: 'موافق',
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        });
+                    }
+                });
+            }
         });
     });
-
-    // Mark as cancelled
-    document.querySelectorAll('.mark-cancelled').forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            
-            Swal.fire({
-                title: '{{ __("admin.confirm") }}',
-                text: '{{ __("admin.mark_cancelled_confirmation") }}',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: '{{ __("admin.yes") }}',
-                cancelButtonText: '{{ __("admin.no") }}',
-                confirmButtonColor: '#d33'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/admin/orders/${orderId}/mark-cancelled`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: '{{ __("admin.success") }}',
-                                text: data.message,
-                                icon: 'success'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                title: '{{ __("admin.error") }}',
-                                text: data.message,
-                                icon: 'error'
-                            });
-                        }
-                    });
-                }
-            });
+    
+    // Handle reject order
+    $('.reject-order').on('click', function(e) {
+        e.preventDefault();
+        const orderId = $(this).data('order-id');
+        const orderNumber = $(this).data('order-number');
+        
+        Swal.fire({
+            title: '{{ __('admin.reject_confirmation') }}',
+            text: `{{ __('admin.reject_confirmation') }} "${orderNumber}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '{{ __('admin.yes') }}',
+            cancelButtonText: '{{ __('admin.cancel') }}',
+            confirmButtonColor: '#ffc107',
+            cancelButtonColor: '#6c757d',
+            width: '500px',
+            padding: '2rem',
+            customClass: {
+                popup: 'swal-wide',
+                title: 'swal-title',
+                content: 'swal-content',
+                confirmButton: 'swal-confirm',
+                cancelButton: 'swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/admin/orders/${orderId}/mark-cancelled`,
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __('admin.success') }}!',
+                            text: '{{ __('admin.order_rejected_successfully') }}',
+                            confirmButtonText: '{{ __('admin.confirm') }}',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ!',
+                            text: 'حدث خطأ أثناء رفض الطلب',
+                            confirmButtonText: 'موافق',
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        });
+                    }
+                });
+            }
         });
     });
-
-    // Filter functionality
-    const statusFilter = document.getElementById('status-filter');
-    const dateFrom = document.getElementById('date-from');
-    const dateTo = document.getElementById('date-to');
-    const search = document.getElementById('search');
-
-    function applyFilters() {
-        const params = new URLSearchParams();
+    
+    // Handle delete order
+    $('.delete-order').on('click', function(e) {
+        e.preventDefault();
+        const orderId = $(this).data('order-id');
+        const orderNumber = $(this).data('order-number');
         
-        if (statusFilter.value) params.append('status', statusFilter.value);
-        if (dateFrom.value) params.append('date_from', dateFrom.value);
-        if (dateTo.value) params.append('date_to', dateTo.value);
-        if (search.value) params.append('search', search.value);
-        
-        window.location.href = '{{ route("admin.orders.index") }}?' + params.toString();
-    }
-
-    statusFilter.addEventListener('change', applyFilters);
-    dateFrom.addEventListener('change', applyFilters);
-    dateTo.addEventListener('change', applyFilters);
-    search.addEventListener('input', debounce(applyFilters, 500));
-
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
+        Swal.fire({
+            title: '{{ __('admin.delete_confirmation') }}',
+            text: `{{ __('admin.delete_confirmation') }} "${orderNumber}"?`,
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonText: '{{ __('admin.yes') }}',
+            cancelButtonText: '{{ __('admin.cancel') }}',
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            width: '500px',
+            padding: '2rem',
+            customClass: {
+                popup: 'swal-wide',
+                title: 'swal-title',
+                content: 'swal-content',
+                confirmButton: 'swal-confirm',
+                cancelButton: 'swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/admin/orders/${orderId}`,
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __('admin.success') }}!',
+                            text: '{{ __('admin.order_deleted_successfully') }}',
+                            confirmButtonText: '{{ __('admin.confirm') }}',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ!',
+                            text: 'حدث خطأ أثناء حذف الطلب',
+                            confirmButtonText: 'موافق',
+                            width: '500px',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'swal-wide',
+                                title: 'swal-title',
+                                content: 'swal-content',
+                                confirmButton: 'swal-confirm'
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+    
+    // Filter change handlers
+    $('#status-filter').on('change', function() {
+        performSearch($('#order-search').val());
+    });
 });
 </script>
 @endpush

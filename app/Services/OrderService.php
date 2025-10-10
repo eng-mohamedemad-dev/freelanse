@@ -7,9 +7,10 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\UserPoint;
 use App\Models\Setting;
+use App\Contracts\OrderServiceInterface;
 use Illuminate\Support\Facades\DB;
 
-class OrderService
+class OrderService implements OrderServiceInterface
 {
     public function createOrder(array $orderData, array $items)
     {
@@ -62,26 +63,79 @@ class OrderService
             'delivered_orders' => Order::where('status', 'delivered')->count(),
             'cancelled_orders' => Order::where('status', 'cancelled')->count(),
             'total_revenue' => Order::where('status', '!=', 'cancelled')->sum('total_amount'),
+            'pending_revenue' => Order::where('status', 'pending')->sum('total_amount'),
+            'delivered_revenue' => Order::where('status', 'delivered')->sum('total_amount'),
+            'cancelled_revenue' => Order::where('status', 'cancelled')->sum('total_amount'),
+            'total_products' => \App\Models\Product::count(),
+            'total_users' => \App\Models\User::count(),
         ];
     }
 
     public function getSalesChartData($period = '30')
     {
-        $days = (int) $period;
-        $data = [];
+        // Generate monthly data for the chart
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $revenue = [];
+        $orders = [];
 
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $sales = Order::whereDate('created_at', $date)
+        for ($i = 0; $i < 12; $i++) {
+            $month = $i + 1;
+            $year = now()->year;
+            
+            $monthRevenue = Order::whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
                 ->where('status', '!=', 'cancelled')
                 ->sum('total_amount');
             
-            $data[] = [
-                'date' => $date,
-                'sales' => $sales,
-            ];
+            $monthOrders = Order::whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->where('status', '!=', 'cancelled')
+                ->count();
+            
+            $revenue[] = round($monthRevenue / 1000, 2); // Convert to thousands
+            $orders[] = round($monthOrders / 1000, 2); // Convert to thousands
         }
 
+        return [
+            'revenue' => $revenue,
+            'orders' => $orders,
+            'months' => $months,
+            'pending' => $this->getPendingData(),
+            'delivered' => $this->getDeliveredData()
+        ];
+    }
+
+    private function getPendingData()
+    {
+        $data = [];
+        for ($i = 0; $i < 12; $i++) {
+            $month = $i + 1;
+            $year = now()->year;
+            
+            $monthPending = Order::whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->where('status', 'pending')
+                ->sum('total_amount');
+            
+            $data[] = round($monthPending / 1000, 2);
+        }
+        return $data;
+    }
+
+    private function getDeliveredData()
+    {
+        $data = [];
+        for ($i = 0; $i < 12; $i++) {
+            $month = $i + 1;
+            $year = now()->year;
+            
+            $monthDelivered = Order::whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->where('status', 'delivered')
+                ->sum('total_amount');
+            
+            $data[] = round($monthDelivered / 1000, 2);
+        }
         return $data;
     }
 

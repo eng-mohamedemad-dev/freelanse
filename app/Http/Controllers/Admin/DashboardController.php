@@ -25,6 +25,20 @@ class DashboardController extends Controller
         $recentOrders = $this->orderService->getRecentOrders(5);
         $salesData = $this->orderService->getSalesChartData(30);
         
+        // Get sales comparison data
+        $currentMonthSales = $this->getCurrentMonthSales();
+        $lastMonthSales = $this->getLastMonthSales();
+        $salesComparison = $this->calculateSalesComparison($currentMonthSales, $lastMonthSales);
+        
+        // Initialize sales data if not exists
+        if (!isset($salesData['revenue'])) {
+            $salesData = [
+                'revenue' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                'pending' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                'delivered' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            ];
+        }
+        
         // Get top products
         $topProducts = Product::withCount('orderItems')
             ->orderBy('order_items_count', 'desc')
@@ -35,7 +49,10 @@ class DashboardController extends Controller
             'statistics',
             'recentOrders', 
             'salesData',
-            'topProducts'
+            'topProducts',
+            'currentMonthSales',
+            'lastMonthSales',
+            'salesComparison'
         ));
     }
 
@@ -99,5 +116,242 @@ class DashboardController extends Controller
             'url' => asset('storage/' . $path),
             'path' => $path
         ]);
+    }
+    
+    public function getSalesData(Request $request)
+    {
+        $period = $request->get('period', 'this_month');
+        
+        switch ($period) {
+            case 'this_month':
+                $currentSales = $this->getCurrentMonthSales();
+                $lastSales = $this->getLastMonthSales();
+                $chartData = $this->getMonthlyChartData();
+                break;
+            case 'last_month':
+                $currentSales = $this->getLastMonthSales();
+                $lastSales = $this->getTwoMonthsAgoSales();
+                $chartData = $this->getMonthlyChartData(2);
+                break;
+            case 'last_3_months':
+                $currentSales = $this->getLast3MonthsSales();
+                $lastSales = $this->getPrevious3MonthsSales();
+                $chartData = $this->getQuarterlyChartData();
+                break;
+            case 'last_6_months':
+                $currentSales = $this->getLast6MonthsSales();
+                $lastSales = $this->getPrevious6MonthsSales();
+                $chartData = $this->getHalfYearlyChartData();
+                break;
+            case 'this_year':
+                $currentSales = $this->getThisYearSales();
+                $lastSales = $this->getLastYearSales();
+                $chartData = $this->getYearlyChartData();
+                break;
+            default:
+                $currentSales = $this->getCurrentMonthSales();
+                $lastSales = $this->getLastMonthSales();
+                $chartData = $this->getMonthlyChartData();
+        }
+        
+        $comparison = $this->calculateSalesComparison($currentSales, $lastSales);
+        
+        return response()->json([
+            'current_sales' => $currentSales,
+            'last_sales' => $lastSales,
+            'comparison' => $comparison,
+            'chart_data' => $chartData
+        ]);
+    }
+    
+    private function getCurrentMonthSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('total_amount');
+    }
+    
+    private function getLastMonthSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->sum('total_amount');
+    }
+    
+    private function getTwoMonthsAgoSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereYear('created_at', now()->subMonths(2)->year)
+            ->whereMonth('created_at', now()->subMonths(2)->month)
+            ->sum('total_amount');
+    }
+    
+    private function getLast3MonthsSales()
+    {
+        return Order::where('status', 'delivered')
+            ->where('created_at', '>=', now()->subMonths(3))
+            ->sum('total_amount');
+    }
+    
+    private function getPrevious3MonthsSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereBetween('created_at', [now()->subMonths(6), now()->subMonths(3)])
+            ->sum('total_amount');
+    }
+    
+    private function getLast6MonthsSales()
+    {
+        return Order::where('status', 'delivered')
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->sum('total_amount');
+    }
+    
+    private function getPrevious6MonthsSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereBetween('created_at', [now()->subMonths(12), now()->subMonths(6)])
+            ->sum('total_amount');
+    }
+    
+    private function getThisYearSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereYear('created_at', now()->year)
+            ->sum('total_amount');
+    }
+    
+    private function getLastYearSales()
+    {
+        return Order::where('status', 'delivered')
+            ->whereYear('created_at', now()->subYear()->year)
+            ->sum('total_amount');
+    }
+    
+    private function calculateSalesComparison($current, $last)
+    {
+        if ($last == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        
+        return round((($current - $last) / $last) * 100, 2);
+    }
+    
+    private function getMonthlyChartData($monthsBack = 1)
+    {
+        $data = [];
+        $categories = [];
+        
+        for ($i = $monthsBack; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $categories[] = $month->format('M Y');
+            
+            $data['revenue'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['pending'][] = Order::where('status', 'pending')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['delivered'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+        }
+        
+        $data['categories'] = $categories;
+        return $data;
+    }
+    
+    private function getQuarterlyChartData()
+    {
+        $data = [];
+        $categories = [];
+        
+        for ($i = 2; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $categories[] = $month->format('M Y');
+            
+            $data['revenue'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['pending'][] = Order::where('status', 'pending')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['delivered'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+        }
+        
+        $data['categories'] = $categories;
+        return $data;
+    }
+    
+    private function getHalfYearlyChartData()
+    {
+        $data = [];
+        $categories = [];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $categories[] = $month->format('M Y');
+            
+            $data['revenue'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['pending'][] = Order::where('status', 'pending')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['delivered'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+        }
+        
+        $data['categories'] = $categories;
+        return $data;
+    }
+    
+    private function getYearlyChartData()
+    {
+        $data = [];
+        $categories = [];
+        
+        for ($i = 11; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $categories[] = $month->format('M Y');
+            
+            $data['revenue'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['pending'][] = Order::where('status', 'pending')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+                
+            $data['delivered'][] = Order::where('status', 'delivered')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('total_amount') / 1000;
+        }
+        
+        $data['categories'] = $categories;
+        return $data;
     }
 }

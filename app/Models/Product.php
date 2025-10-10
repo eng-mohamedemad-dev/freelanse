@@ -16,16 +16,9 @@ class Product extends Model
         'description',
         'price',
         'sale_price',
-        'sku',
         'stock',
-        'low_stock_threshold',
-        'status',
         'category_id',
-        'brand_id',
         'images',
-        'meta_title',
-        'meta_description',
-        'featured',
     ];
 
     protected $casts = [

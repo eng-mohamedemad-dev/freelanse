@@ -13,16 +13,11 @@ class ProductService implements ProductServiceInterface
 {
     public function getAllProducts(Request $request)
     {
-        $query = Product::with(['category', 'brand']);
+        $query = Product::with(['category']);
 
         // Filter by category
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
-        }
-
-        // Filter by brand
-        if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->brand_id);
         }
 
         // Filter by status
@@ -34,8 +29,7 @@ class ProductService implements ProductServiceInterface
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -44,7 +38,7 @@ class ProductService implements ProductServiceInterface
         $sortDirection = $request->get('sort_direction', 'desc');
         $query->orderBy($sortBy, $sortDirection);
 
-        return $query->paginate(20);
+        return $query->paginate(10);
     }
 
     public function createProduct(array $data)
@@ -96,14 +90,24 @@ class ProductService implements ProductServiceInterface
     private function uploadImage($image)
     {
         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $path = $image->storeAs('uploads/products', $filename, 'public');
-        return $path;
+        $uploadPath = public_path('uploads/products');
+        
+        // إنشاء المجلد إذا لم يكن موجوداً
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+        
+        // نقل الملف
+        $image->move($uploadPath, $filename);
+        
+        return 'uploads/products/' . $filename;
     }
 
     private function deleteImage($imagePath)
     {
-        if (Storage::disk('public')->exists($imagePath)) {
-            Storage::disk('public')->delete($imagePath);
+        $fullPath = public_path($imagePath);
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
         }
     }
 

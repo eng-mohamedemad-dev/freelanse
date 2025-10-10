@@ -25,26 +25,30 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
 
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('order_number', 'like', '%' . $request->search . '%')
+                $q->where('id', 'like', '%' . $request->search . '%')
                   ->orWhere('customer_name', 'like', '%' . $request->search . '%')
                   ->orWhere('customer_email', 'like', '%' . $request->search . '%')
-                  ->orWhere('customer_phone', 'like', '%' . $request->search . '%');
+                  ->orWhere('customer_phone', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('user', function($userQuery) use ($request) {
+                      $userQuery->where('name', 'like', '%' . $request->search . '%')
+                                ->orWhere('email', 'like', '%' . $request->search . '%');
+                  });
             });
         }
 
-        $orders = $query->orderBy('created_at', 'desc')->paginate(20);
+        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // If AJAX request, return only table content
+        if ($request->ajax() || $request->has('ajax')) {
+            return response()->json([
+                'html' => view('admin.orders.partials.table', compact('orders'))->render(),
+                'count' => $orders->count()
+            ]);
+        }
 
         return view('admin.orders.index', compact('orders'));
     }
@@ -93,5 +97,26 @@ class OrderController extends Controller
             'success' => true,
             'message' => __('admin.order_marked_as_cancelled')
         ]);
+    }
+
+    public function destroy(Order $order)
+    {
+        try {
+            // Delete order items first
+            $order->items()->delete();
+            
+            // Delete the order
+            $order->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.order_deleted_successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.error')
+            ], 500);
+        }
     }
 }
