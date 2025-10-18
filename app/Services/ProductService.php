@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Contracts\ProductServiceInterface;
 use App\Models\Product;
 use App\Models\Category;
-use App\Models\Brand;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,8 +28,11 @@ class ProductService implements ProductServiceInterface
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+                $term = '%' . $request->search . '%';
+                $q->where('name_ar', 'like', $term)
+                  ->orWhere('name_en', 'like', $term)
+                  ->orWhere('description_ar', 'like', $term)
+                  ->orWhere('description_en', 'like', $term);
             });
         }
 
@@ -52,11 +55,23 @@ class ProductService implements ProductServiceInterface
             $data['images'] = $uploadedImages;
         }
 
-        return Product::create($data);
+        // Extract variants data
+        $variants = $data['variants'] ?? [];
+        unset($data['variants']);
+
+        $product = Product::create($data);
+
+        // Create variants
+        if (!empty($variants)) {
+            $this->createVariants($product, $variants);
+        }
+
+        return $product;
     }
 
     public function updateProduct(Product $product, array $data)
     {
+        // تحديث يعتمد مباشرة على الحقول الجديدة
         // Handle image uploads
         if (isset($data['images']) && is_array($data['images'])) {
             $uploadedImages = [];
@@ -72,7 +87,18 @@ class ProductService implements ProductServiceInterface
             $data['images'] = $uploadedImages;
         }
 
-        return $product->update($data);
+        // Extract variants data
+        $variants = $data['variants'] ?? [];
+        unset($data['variants']);
+
+        $product->update($data);
+
+        // Update variants
+        if (isset($variants)) {
+            $this->updateVariants($product, $variants);
+        }
+
+        return $product;
     }
 
     public function deleteProduct(Product $product)
@@ -111,12 +137,49 @@ class ProductService implements ProductServiceInterface
         }
     }
 
+    private function createVariants(Product $product, array $variants)
+    {
+        foreach ($variants as $variantData) {
+            if (empty($variantData['size_id']) && empty($variantData['color_id'])) {
+                continue; // Skip if no size or color selected
+            }
+
+            // Handle variant images
+            $variantImages = [];
+            if (isset($variantData['images']) && is_array($variantData['images'])) {
+                foreach ($variantData['images'] as $image) {
+                    $variantImages[] = $this->uploadImage($image);
+                }
+            }
+
+            ProductVariant::create([
+                'product_id' => $product->id,
+                'size_id' => $variantData['size_id'] ?? null,
+                'color_id' => $variantData['color_id'] ?? null,
+                'price' => $variantData['price'] ?? $product->price,
+                'stock' => $variantData['stock'] ?? 0,
+                'images' => $variantImages,
+            ]);
+        }
+    }
+
+    private function updateVariants(Product $product, array $variants)
+    {
+        // Delete existing variants
+        $product->variants()->delete();
+
+        // Create new variants
+        if (!empty($variants)) {
+            $this->createVariants($product, $variants);
+        }
+    }
+
     public function getFeaturedProducts($limit = 8)
     {
         return Product::active()
             ->featured()
             ->inStock()
-            ->with(['category', 'brand'])
+            ->with(['category'])
             ->limit($limit)
             ->get();
     }
@@ -126,7 +189,7 @@ class ProductService implements ProductServiceInterface
         return Product::active()
             ->inStock()
             ->where('category_id', $category->id)
-            ->with(['category', 'brand'])
+            ->with(['category'])
             ->limit($limit)
             ->get();
     }
@@ -134,13 +197,15 @@ class ProductService implements ProductServiceInterface
     public function searchProducts($searchTerm, $limit = 20)
     {
         return Product::active()
-            ->inStock()
-            ->where(function($query) use ($searchTerm) {
-                $query->where('name', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('description', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('sku', 'like', '%' . $searchTerm . '%');
+        ->inStock()
+            ->where(function($q) use ($searchTerm) {
+                $term = '%' . $searchTerm . '%';
+                $q->where('name_ar', 'like', $term)
+                  ->orWhere('name_en', 'like', $term)
+                  ->orWhere('description_ar', 'like', $term)
+                  ->orWhere('description_en', 'like', $term);
             })
-            ->with(['category', 'brand'])
+            ->with(['category'])
             ->limit($limit)
             ->get();
     }

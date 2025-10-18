@@ -17,8 +17,10 @@ class CategoryController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name_ar', 'like', '%' . $request->search . '%')
+                  ->orWhere('name_en', 'like', '%' . $request->search . '%')
+                  ->orWhere('description_ar', 'like', '%' . $request->search . '%')
+                  ->orWhere('description_en', 'like', '%' . $request->search . '%');
             });
         }
         
@@ -45,7 +47,12 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request)
     {
 
-        $data = $request->all();
+        $data = $request->validated();
+        // للتوافق: املأ الحقول الأساسية من العربية إذا لزم
+        $data['name_ar'] = $data['name_ar'] ?? ($data['name_ar'] ?? null);
+        $data['description_ar'] = $data['description_ar'] ?? ($data['description_ar'] ?? null);
+        $data['name_en'] = $data['name_en'] ?? ($data['name_en'] ?? null);
+        $data['description_en'] = $data['description_en'] ?? ($data['description_en'] ?? null);
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -86,7 +93,11 @@ class CategoryController extends Controller
     public function update(UpdateCategoryRequest $request, Category $category)
     {
 
-        $data = $request->all();
+        $data = $request->validated();
+        $data['name_ar'] = $data['name_ar'] ?? ($data['name_ar'] ?? $category->name_ar);
+        $data['description_ar'] = $data['description_ar'] ?? ($data['description_ar'] ?? $category->description_ar);
+        $data['name_en'] = $data['name_en'] ?? ($data['name_en'] ?? $category->name_en);
+        $data['description_en'] = $data['description_en'] ?? ($data['description_en'] ?? $category->description_en);
         
         // Handle image upload
         if ($request->hasFile('image')) {

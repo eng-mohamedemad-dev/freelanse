@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Category;
 use Carbon\Carbon;
 
 class ChartTestDataSeeder extends Seeder
@@ -28,6 +29,25 @@ class ChartTestDataSeeder extends Seeder
     {
         $users = User::all();
         $products = Product::all();
+        // Ensure at least 20 products exist for testing top list
+        if ($products->count() < 20) {
+            for ($i = $products->count(); $i < 20; $i++) {
+                $categoryId = Category::inRandomOrder()->value('id') ?? 1;
+                $p = Product::create([
+                    'name_ar' => 'منتج عينة #' . ($i+1),
+                    'name_en' => 'Sample Product #' . ($i+1),
+                    'description_ar' => 'منتج تجريبي',
+                    'description_en' => 'Seeded sample product',
+                    'price' => rand(50,150),
+                    'sale_price' => rand(40,120),
+                    'stock' => rand(10,100),
+                    'category_id' => $categoryId,
+                    'images' => [],
+                    'status' => 'active',
+                ]);
+                $products->push($p);
+            }
+        }
         
         // Create orders for each month of 2024 with varying amounts
         $monthlyData = [

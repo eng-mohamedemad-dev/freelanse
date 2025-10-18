@@ -32,6 +32,10 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
+                                    <label for="site_name" class="form-label">{{ __('admin.site_name') }}</label>
+                                    <input type="text" class="form-control" id="site_name" name="site_name" value="{{ old('site_name', $settings['site_name']) }}" placeholder="{{ __('admin.site_name') }}">
+                                </div>
+                                <div class="form-group">
                                     <label for="site_logo" class="form-label">{{ __('admin.site_logo') }}</label>
                                     
                                     <div class="upload-image flex-grow">
@@ -745,6 +749,7 @@
         border: 2px solid #28a745;
     }
     
+    /* عرض الشعار بشكل دائرة كما كان سابقًا */
     .current-image {
         width: 120px;
         height: 80px;
@@ -812,11 +817,21 @@
     
     .image-preview-item img {
         width: 120px;
-        height: 80px;
-        object-fit: contain;
+        height: 120px;
+        object-fit: cover;
         display: block;
         background: #fff;
-        padding: 10px;
+        padding: 6px;
+        border: 2px solid #e9ecef;
+        border-radius: 50%;
+    }
+
+    @media (max-width: 768px) {
+        .current-image,
+        .image-preview-item img {
+            width: 100px;
+            height: 100px;
+        }
     }
     
     .remove-image-btn {
@@ -1066,9 +1081,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
-            console.log('File input changed');
             const files = Array.from(e.target.files);
-            console.log('Selected files:', files.length);
             
             if (files.length > 0) {
                 selectedImages = [];
@@ -1078,11 +1091,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let processedCount = 0;
                 
                 files.forEach((file, index) => {
-                    console.log('Processing file:', file.name, file.type);
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            console.log('File read successfully');
                             const imageData = {
                                 file: file,
                                 url: e.target.result,
@@ -1101,7 +1112,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             `;
                             
                             previewContainer.appendChild(previewItem);
-                            console.log('Preview item added');
                             
                             processedCount++;
                             if (processedCount === files.filter(f => f.type.startsWith('image/')).length) {
@@ -1160,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', function() {
     removeCurrentImageBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const logoPath = this.getAttribute('data-logo');
-            console.log('Removing current logo:', logoPath);
             
             // Here you would typically make an AJAX call to remove the logo
             // For now, we'll just hide the current logo display
@@ -1177,7 +1186,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const pointsDiscount = document.getElementById('points_discount');
     
     function togglePointsFields() {
-        console.log('Points enabled:', pointsEnabled.checked);
         const pointsCountGroup = pointsCount ? pointsCount.closest('.col-md-3') : null;
         const pointsDiscountGroup = pointsDiscount ? pointsDiscount.closest('.col-md-3') : null;
         
@@ -1208,7 +1216,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (pointsEnabled) {
         pointsEnabled.addEventListener('change', function() {
-            console.log('Points checkbox changed:', this.checked);
             togglePointsFields();
         });
         togglePointsFields();
@@ -1219,7 +1226,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxSpins = document.getElementById('max_wheel_spins_per_day');
     
     function toggleWheelFields() {
-        console.log('Wheel enabled:', wheelEnabled.checked);
         const maxSpinsGroup = maxSpins ? maxSpins.closest('.col-md-6') : null;
         const wheelPrizesSection = document.querySelector('.wheel-prizes-section');
         
@@ -1247,7 +1253,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (wheelEnabled) {
         wheelEnabled.addEventListener('change', function() {
-            console.log('Wheel checkbox changed:', this.checked);
             toggleWheelFields();
         });
         toggleWheelFields();

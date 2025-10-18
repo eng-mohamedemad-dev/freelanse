@@ -12,8 +12,11 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description',
+        // Remove legacy base-only name/description from forms, but keep fillable for compatibility
+        'name_ar',
+        'name_en',
+        'description_ar',
+        'description_en',
         'price',
         'sale_price',
         'stock',
@@ -31,10 +34,6 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function brand(): BelongsTo
-    {
-        return $this->belongsTo(Brand::class);
-    }
 
     public function orderItems(): HasMany
     {
@@ -51,7 +50,28 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
     // Accessors
+    public function getDisplayNameAttribute()
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && !empty($this->name_ar)) return $this->name_ar;
+        if ($locale === 'en' && !empty($this->name_en)) return $this->name_en;
+        return $this->name_ar ?? $this->name_en ?? '';
+    }
+
+    public function getDisplayDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && !empty($this->description_ar)) return $this->description_ar;
+        if ($locale === 'en' && !empty($this->description_en)) return $this->description_en;
+        return $this->description_ar ?? $this->description_en ?? '';
+    }
+
     public function getImageAttribute()
     {
         $images = $this->images;

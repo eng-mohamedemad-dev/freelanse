@@ -22,6 +22,8 @@ window.SwalConfig = {
             title: title,
             text: message,
             confirmButtonText: 'موافق',
+            width: '560px',
+            padding: '2rem',
             timer: 3000,
             timerProgressBar: true,
             showClass: {
@@ -40,6 +42,8 @@ window.SwalConfig = {
             title: title,
             text: message,
             confirmButtonText: 'موافق',
+            width: '560px',
+            padding: '2rem',
             showClass: {
                 popup: 'animate__animated animate__fadeInUp'
             },
@@ -56,6 +60,8 @@ window.SwalConfig = {
             title: title,
             text: message,
             confirmButtonText: 'موافق',
+            width: '560px',
+            padding: '2rem',
             showClass: {
                 popup: 'animate__animated animate__fadeInUp'
             },
@@ -72,6 +78,8 @@ window.SwalConfig = {
             title: title,
             text: message,
             confirmButtonText: 'موافق',
+            width: '560px',
+            padding: '2rem',
             showClass: {
                 popup: 'animate__animated animate__fadeInUp'
             },
@@ -92,6 +100,8 @@ window.SwalConfig = {
             cancelButtonText: cancelText,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
+            width: '560px',
+            padding: '2rem',
             showClass: {
                 popup: 'animate__animated animate__fadeInUp'
             },
@@ -112,6 +122,8 @@ window.SwalConfig = {
             cancelButtonText: 'إلغاء',
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
+            width: '560px',
+            padding: '2rem',
             showClass: {
                 popup: 'animate__animated animate__fadeInUp'
             },

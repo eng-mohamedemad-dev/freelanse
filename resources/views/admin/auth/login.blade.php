@@ -109,8 +109,8 @@
             color: #155724;
         }
         .logo {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             margin: 0 auto 25px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
@@ -121,6 +121,14 @@
             font-size: 26px;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            overflow: hidden;
+        }
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
         
         /* Responsive Design */
@@ -147,7 +155,21 @@
 <body>
     <div class="login-card">
         <div class="login-header">
-            <div class="logo">A</div>
+            <div class="logo">
+                @php
+                    // ابحث عن أي ملف شعار باسم logo بأي امتداد داخل public/uploads/settings
+                    $logoPath = null;
+                    $logoDir = public_path('uploads/settings');
+                    if (is_dir($logoDir)) {
+                        foreach (glob($logoDir . '/logo.*') as $file) { $logoPath = str_replace(public_path() . '/', '', $file); break; }
+                    }
+                @endphp
+                @if($logoPath && file_exists(public_path($logoPath)))
+                    <img src="{{ asset($logoPath) }}" alt="logo">
+                @else
+                    A
+                @endif
+            </div>
             <h2>تسجيل الدخول</h2>
             <p>أدخل بياناتك للوصول إلى لوحة التحكم</p>
         </div>

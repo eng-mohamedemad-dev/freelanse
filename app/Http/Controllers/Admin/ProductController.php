@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Contracts\ProductServiceInterface;
 use App\Models\Product;
 use App\Models\Category;
-use App\Models\Brand;
+use App\Models\Size;
+use App\Models\Color;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -39,8 +41,14 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::active()->get();
+        if ($categories->isEmpty()) {
+            $categories = Category::all();
+        }
 
-        return view('admin.products.create', compact('categories'));
+        $sizes = Size::orderBy('name_ar')->get();
+        $colors = Color::orderBy('name_ar')->get();
+
+        return view('admin.products.create', compact('categories', 'sizes', 'colors'));
     }
 
     public function store(StoreProductRequest $request)
@@ -49,6 +57,8 @@ class ProductController extends Controller
         // إضافة الحالة تلقائياً كنشط
         $data = $request->validated();
         $data['status'] = 'active';
+        // تمرير ملفات الصور بشكل صريح لتفادي حفظ مسارات tmp المؤقتة
+        $data['images'] = request()->file('images', []);
         
         $product = $this->productService->createProduct($data);
 
@@ -58,7 +68,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['category', 'brand', 'reviews.user']);
+        $product->load(['category', 'reviews.user', 'variants.size', 'variants.color']);
         
         return view('admin.products.show', compact('product'));
     }
@@ -66,8 +76,15 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::active()->get();
+        if ($categories->isEmpty()) {
+            $categories = Category::all();
+        }
 
-        return view('admin.products.edit', compact('product', 'categories'));
+        $sizes = Size::orderBy('name_ar')->get();
+        $colors = Color::orderBy('name_ar')->get();
+        $product->load('variants.size', 'variants.color');
+
+        return view('admin.products.edit', compact('product', 'categories', 'sizes', 'colors'));
     }
 
     public function update(UpdateProductRequest $request, Product $product)
@@ -76,9 +93,9 @@ class ProductController extends Controller
         $data = $request->validated();
         
         // Handle removed images
-        if ($request->has('removed_images')) {
+        $removedImages = request()->input('removed_images', []);
+        if (!empty($removedImages)) {
             $currentImages = $product->images ?? [];
-            $removedImages = $request->removed_images;
             $data['images'] = array_diff($currentImages, $removedImages);
         }
         

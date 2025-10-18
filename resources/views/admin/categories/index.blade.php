@@ -282,6 +282,83 @@
         border-color: #718096;
         color: #a0aec0;
     }
+    
+    /* Dark Theme Support for Add Button */
+    .dark-theme .tf-button.style-1 {
+        background: linear-gradient(135deg, #4299e1 0%, #667eea 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    
+    .dark-theme .tf-button.style-1:hover {
+        background: linear-gradient(135deg, #3182ce 0%, #5a67d8 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4) !important;
+    }
+    
+    .dark-theme .tf-button.style-1 i {
+        color: #ffffff !important;
+    }
+    
+    .dark-theme .wg-box {
+        background: #2d3748 !important;
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .search-input {
+        background-color: #1a202c !important;
+        border-color: #4a5568 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .dark-theme .search-input::placeholder {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .search-input:focus {
+        border-color: #4299e1 !important;
+        box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25) !important;
+    }
+    
+    .dark-theme .button-submit button {
+        background-color: #4299e1 !important;
+        border-color: #4299e1 !important;
+        color: #ffffff !important;
+    }
+    
+    .dark-theme .button-submit button:hover {
+        background-color: #3182ce !important;
+        border-color: #3182ce !important;
+    }
+    
+    .dark-theme .table thead th {
+        background-color: #1a202c !important;
+        color: #e2e8f0 !important;
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .table {
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .table td {
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .list-icon-function .item.eye {
+        background: #1a365d !important;
+        color: #63b3ed !important;
+    }
+    
+    .dark-theme .list-icon-function .item.edit {
+        background: #2d1b00 !important;
+        color: #f6ad55 !important;
+    }
+    
+    .dark-theme .list-icon-function .item.delete {
+        background: #2d1b1b !important;
+        color: #fc8181 !important;
+    }
 </style>
 @endpush
 
@@ -315,8 +392,6 @@ $(document).ready(function() {
                 ajax: 1
             },
             success: function(response) {
-                console.log('Search successful, updating table');
-                console.log('Response:', response);
                 
                 if (response && response.html) {
                     // Update table content directly

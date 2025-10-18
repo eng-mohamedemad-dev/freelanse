@@ -64,12 +64,12 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <div class="detail-label">{{ __('admin.category_name') }}</div>
-                        <div class="detail-value">{{ $category->name }}</div>
+                        <div class="detail-value">{{ $category->display_name }}</div>
                     </div>
                     
                     <div class="detail-item">
                         <div class="detail-label">{{ __('admin.category_description') }}</div>
-                        <div class="detail-value">{{ $category->description }}</div>
+                        <div class="detail-value">{{ $category->display_description }}</div>
                     </div>
                     
                     <div class="detail-item">

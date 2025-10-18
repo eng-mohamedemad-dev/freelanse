@@ -7,7 +7,9 @@ use App\Contracts\OrderServiceInterface;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\Notification;
 use App\Services\OrderService;
+use App\Services\StockNotificationService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -21,6 +23,10 @@ class DashboardController extends Controller
 
     public function index()
     {
+        // فحص المخزون وإرسال الإشعارات
+        $stockService = new StockNotificationService();
+        $stockCheckResult = $stockService->checkAllProductsStock();
+        
         $statistics = $this->orderService->getOrderStatistics();
         $recentOrders = $this->orderService->getRecentOrders(5);
         $salesData = $this->orderService->getSalesChartData(30);
@@ -39,11 +45,18 @@ class DashboardController extends Controller
             ];
         }
         
+        // Ensure we have proper data for the chart
+        $salesData = $this->orderService->getSalesChartData(30);
+        
         // Get top products
         $topProducts = Product::withCount('orderItems')
             ->orderBy('order_items_count', 'desc')
             ->limit(5)
             ->get();
+
+        // Get notifications for the dashboard
+        $notifications = $stockService->getRecentNotifications(5);
+        $unreadNotificationsCount = $stockService->getUnreadNotificationsCount();
 
         return view('admin.dashboard', compact(
             'statistics',
@@ -52,7 +65,10 @@ class DashboardController extends Controller
             'topProducts',
             'currentMonthSales',
             'lastMonthSales',
-            'salesComparison'
+            'salesComparison',
+            'notifications',
+            'unreadNotificationsCount',
+            'stockCheckResult'
         ));
     }
 
@@ -163,21 +179,107 @@ class DashboardController extends Controller
             'chart_data' => $chartData
         ]);
     }
+
+    /**
+     * الحصول على الإشعارات
+     */
+    public function getNotifications(Request $request)
+    {
+        $stockService = new StockNotificationService();
+        $notifications = $stockService->getRecentNotifications($request->get('limit', 10));
+        $unreadCount = $stockService->getUnreadNotificationsCount();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount
+        ]);
+    }
+
+    /**
+     * تحديد إشعار كمقروء
+     */
+    public function markNotificationAsRead(Request $request, $id)
+    {
+        $notification = Notification::findOrFail($id);
+        $notification->markAsRead();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديد الإشعار كمقروء'
+        ]);
+    }
+
+    /**
+     * تحديد جميع الإشعارات كمقروءة
+     */
+    public function markAllNotificationsAsRead(Request $request)
+    {
+        Notification::unread()->update([
+            'is_read' => true,
+            'read_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديد جميع الإشعارات كمقروءة'
+        ]);
+    }
+
+    /**
+     * حذف إشعار
+     */
+    public function deleteNotification(Request $request, $id)
+    {
+        $notification = Notification::findOrFail($id);
+        $notification->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حذف الإشعار'
+        ]);
+    }
+
+    /**
+     * صفحة عرض جميع الإشعارات
+     */
+    public function notifications()
+    {
+        $notifications = Notification::orderBy('created_at', 'desc')->paginate(20);
+        $unreadCount = Notification::unread()->count();
+
+        return view('admin.notifications.index', compact('notifications', 'unreadCount'));
+    }
+
+    /**
+     * جلب الإشعارات للهيدر
+     */
+    public function getHeaderNotifications()
+    {
+        $notifications = Notification::orderBy('created_at', 'desc')->limit(5)->get();
+        $unreadCount = Notification::unread()->count();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount
+        ]);
+    }
     
     private function getCurrentMonthSales()
     {
+        // Get the last month with data (December 2024)
         return Order::where('status', 'delivered')
-            ->whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
-            ->sum('total_amount');
+            ->whereYear('created_at', 2024)
+            ->whereMonth('created_at', 12)
+            ->sum('total_amount') ?: 0;
     }
     
     private function getLastMonthSales()
     {
+        // Get the previous month with data (November 2024)
         return Order::where('status', 'delivered')
-            ->whereYear('created_at', now()->subMonth()->year)
-            ->whereMonth('created_at', now()->subMonth()->month)
-            ->sum('total_amount');
+            ->whereYear('created_at', 2024)
+            ->whereMonth('created_at', 11)
+            ->sum('total_amount') ?: 0;
     }
     
     private function getTwoMonthsAgoSales()

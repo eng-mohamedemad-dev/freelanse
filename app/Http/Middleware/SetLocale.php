@@ -20,12 +20,10 @@ class SetLocale
             $locale = session('locale');
             app()->setLocale($locale);
             config(['app.locale' => $locale]);
-            \Log::info('SetLocale Middleware: Setting locale to ' . $locale);
         } else {
             // Default to Arabic
             app()->setLocale('ar');
             config(['app.locale' => 'ar']);
-            \Log::info('SetLocale Middleware: Setting default locale to ar');
         }
         
         return $next($request);

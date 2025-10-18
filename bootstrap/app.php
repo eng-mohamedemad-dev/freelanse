@@ -14,6 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
         ]);
+        
+        // تسجيل الـ middleware للأدوار
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+        
+        // تفعيل CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            // استثناءات إذا لزم الأمر
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

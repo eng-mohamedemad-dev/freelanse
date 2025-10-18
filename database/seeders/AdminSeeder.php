@@ -15,9 +15,10 @@ class AdminSeeder extends Seeder
     {
         // إنشاء الادمن الافتراضي
         User::create([
-            'name' => 'Admin',
-            'email' => 'admin@ecommerce.com',
-            'password' => Hash::make('admin123'),
+            'name' => 'مدير النظام',
+            'email' => 'admin@admin.com',
+            'password' => Hash::make('123456'),
+            'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
@@ -26,6 +27,7 @@ class AdminSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'user@ecommerce.com',
             'password' => Hash::make('user123'),
+            'role' => 'customer',
             'email_verified_at' => now(),
         ]);
     }

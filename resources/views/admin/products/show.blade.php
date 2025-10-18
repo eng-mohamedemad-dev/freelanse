@@ -31,7 +31,7 @@
 
 <div class="wg-box">
     <div class="flex items-center justify-between gap10 flex-wrap mb-20">
-        <h4>{{ $product->name }}</h4>
+        <h4>{{ $product->display_name }}</h4>
         <div class="flex items-center gap10">
             <a href="{{ route('admin.products.edit', $product) }}" class="tf-button style-1">
                 <i class="icon-edit"></i> {{ __('admin.edit_product') }}
@@ -50,7 +50,7 @@
                     <div class="image-gallery">
                         @foreach($product->images as $index => $image)
                             <div class="image-item">
-                                <img src="{{ asset($image) }}" alt="{{ $product->name }}" class="product-image">
+                                <img src="{{ asset($image) }}" alt="{{ $product->display_name }}" class="product-image">
                                 <div class="image-overlay">
                                     <span class="image-number">{{ $index + 1 }}</span>
                                 </div>
@@ -72,12 +72,12 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <div class="detail-label">{{ __('admin.product_name') }}</div>
-                        <div class="detail-value">{{ $product->name }}</div>
+                        <div class="detail-value">{{ $product->display_name }}</div>
                     </div>
                     
                     <div class="detail-item">
                         <div class="detail-label">{{ __('admin.description') }}</div>
-                        <div class="detail-value">{{ $product->description }}</div>
+                        <div class="detail-value">{{ $product->display_description }}</div>
                     </div>
                     
                     <div class="detail-item">
@@ -115,6 +115,68 @@
                 </div>
             </div>
         </div>
+        
+        @if($product->variants && $product->variants->count() > 0)
+        <div class="product-variants-section">
+            <h5 class="section-title">{{ __('admin.product_variants') }}</h5>
+            <div class="variants-grid">
+                @foreach($product->variants as $index => $variant)
+                    <div class="variant-card">
+                        <div class="variant-header">
+                            <h6 class="variant-title">{{ __('admin.variant') }} {{ $index + 1 }}</h6>
+                        </div>
+                        
+                        <div class="variant-content">
+                            <div class="variant-details">
+                                <div class="variant-detail-item">
+                                    <span class="variant-label">{{ __('admin.size') }}:</span>
+                                    <span class="variant-value">{{ $variant->size->display_name ?? __('admin.no_data') }}</span>
+                                </div>
+                                
+                                <div class="variant-detail-item">
+                                    <span class="variant-label">{{ __('admin.color') }}:</span>
+                                    <span class="variant-value">
+                                        @if($variant->color)
+                                            <span class="color-indicator" style="background-color: {{ $variant->color->hex ?? '#ccc' }};"></span>
+                                            {{ $variant->color->display_name }}
+                                        @else
+                                            {{ __('admin.no_data') }}
+                                        @endif
+                                    </span>
+                                </div>
+                                
+                                <div class="variant-detail-item">
+                                    <span class="variant-label">{{ __('admin.price') }}:</span>
+                                    <span class="variant-value price">${{ number_format($variant->price, 2) }}</span>
+                                </div>
+                                
+                                <div class="variant-detail-item">
+                                    <span class="variant-label">{{ __('admin.stock') }}:</span>
+                                    <span class="variant-value stock">{{ $variant->stock }}</span>
+                                </div>
+                            </div>
+                            
+                            @if($variant->images && count($variant->images) > 0)
+                                <div class="variant-images">
+                                    <h6 class="variant-images-title">{{ __('admin.variant_images') }}</h6>
+                                    <div class="variant-image-gallery">
+                                        @foreach($variant->images as $imgIndex => $image)
+                                            <div class="variant-image-item">
+                                                <img src="{{ asset($image) }}" alt="Variant Image {{ $imgIndex + 1 }}" class="variant-image">
+                                                <div class="variant-image-overlay">
+                                                    <span class="image-number">{{ $imgIndex + 1 }}</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection
@@ -331,6 +393,319 @@
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
     }
     
+    /* Product Variants Styles */
+    .product-variants-section {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #e9ecef;
+    }
+    
+    .variants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+    }
+    
+    .variant-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .variant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-color: #007bff;
+    }
+    
+    .variant-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .variant-header {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .variant-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .variant-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .variant-details {
+        display: grid;
+        gap: 12px;
+    }
+    
+    .variant-detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: white;
+        border-radius: 6px;
+        border-left: 3px solid #007bff;
+    }
+    
+    .variant-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+    }
+    
+    .variant-value {
+        color: #212529;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .variant-value.price {
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    .variant-value.stock {
+        color: #007bff;
+        font-weight: 600;
+    }
+    
+    .color-indicator {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 8px;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #dee2e6;
+        vertical-align: middle;
+        position: relative;
+    }
+    
+    .color-indicator::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: inherit;
+    }
+    
+    .variant-images {
+        margin-top: 15px;
+    }
+    
+    .variant-images-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+    }
+    
+    .variant-image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+    }
+    
+    .variant-image-item {
+        position: relative;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .variant-image-item:hover {
+        border-color: #007bff;
+        transform: scale(1.05);
+    }
+    
+    .variant-image {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .variant-image-overlay {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(0,123,255,0.9);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    
+    /* Dark Theme Support */
+    .dark-theme .product-view-container {
+        background: #2d3748 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .dark-theme .section-title {
+        color: #e2e8f0 !important;
+        border-bottom-color: #4299e1 !important;
+    }
+    
+    .dark-theme .product-image-section {
+        background: #1a202c !important;
+    }
+    
+    .dark-theme .product-details-section {
+        background: #1a202c !important;
+    }
+    
+    .dark-theme .detail-item {
+        background: #2d3748 !important;
+        border-left-color: #4299e1 !important;
+    }
+    
+    .dark-theme .detail-item:hover {
+        background: #4a5568 !important;
+    }
+    
+    .dark-theme .detail-label {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .detail-value {
+        color: #e2e8f0 !important;
+    }
+    
+    .dark-theme .no-images {
+        background: #1a202c !important;
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .no-image-icon {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .no-image-text {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .image-item {
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .image-item:hover {
+        border-color: #4299e1 !important;
+    }
+    
+    .dark-theme .product-variants-section {
+        border-top-color: #4a5568;
+    }
+    
+    .dark-theme .variant-card {
+        background: #1a202c;
+        border-color: #4a5568;
+    }
+    
+    .dark-theme .variant-card:hover {
+        border-color: #4299e1;
+    }
+    
+    .dark-theme .variant-title {
+        color: #e2e8f0;
+    }
+    
+    .dark-theme .variant-header {
+        border-bottom-color: #4a5568;
+    }
+    
+    .dark-theme .variant-detail-item {
+        background: #2d3748;
+        border-left-color: #4299e1;
+    }
+    
+    .dark-theme .variant-label {
+        color: #a0aec0;
+    }
+    
+    .dark-theme .variant-value {
+        color: #e2e8f0;
+    }
+    
+    .dark-theme .variant-images-title {
+        color: #a0aec0;
+    }
+    
+    .dark-theme .variant-image-item {
+        border-color: #4a5568;
+    }
+    
+    .dark-theme .variant-image-item:hover {
+        border-color: #4299e1;
+    }
+    
+    /* Additional Dark Theme Support */
+    .dark-theme .wg-box {
+        background: #2d3748 !important;
+        border-color: #4a5568 !important;
+    }
+    
+    .dark-theme .breadcrumbs a {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .breadcrumbs .text-tiny {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme h3,
+    .dark-theme h4,
+    .dark-theme h5 {
+        color: #e2e8f0 !important;
+    }
+    
+    .dark-theme .price-regular {
+        color: #a0aec0 !important;
+    }
+    
+    .dark-theme .price-sale {
+        color: #68d391 !important;
+    }
+    
+    .dark-theme .stock-quantity {
+        color: #4299e1 !important;
+    }
+    
+    .dark-theme .category-badge {
+        background: linear-gradient(135deg, #4299e1 0%, #667eea 100%) !important;
+    }
+    
     @media (max-width: 768px) {
         .product-main-info {
             grid-template-columns: 1fr;
@@ -344,6 +719,17 @@
         
         .image-gallery {
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+        
+        .variants-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .variant-detail-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
         }
     }
 </style>

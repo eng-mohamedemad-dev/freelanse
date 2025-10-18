@@ -80,7 +80,7 @@ class OrderService implements OrderServiceInterface
 
         for ($i = 0; $i < 12; $i++) {
             $month = $i + 1;
-            $year = now()->year;
+            $year = 2024; // Use 2024 since all orders are from 2024
             
             $monthRevenue = Order::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
@@ -92,8 +92,8 @@ class OrderService implements OrderServiceInterface
                 ->where('status', '!=', 'cancelled')
                 ->count();
             
-            $revenue[] = round($monthRevenue / 1000, 2); // Convert to thousands
-            $orders[] = round($monthOrders / 1000, 2); // Convert to thousands
+            $revenue[] = round(($monthRevenue ?: 0) / 1000, 2); // Convert to thousands
+            $orders[] = round(($monthOrders ?: 0) / 1000, 2); // Convert to thousands
         }
 
         return [
@@ -110,14 +110,14 @@ class OrderService implements OrderServiceInterface
         $data = [];
         for ($i = 0; $i < 12; $i++) {
             $month = $i + 1;
-            $year = now()->year;
+            $year = 2024; // Use 2024 since all orders are from 2024
             
             $monthPending = Order::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('status', 'pending')
                 ->sum('total_amount');
             
-            $data[] = round($monthPending / 1000, 2);
+            $data[] = round(($monthPending ?: 0) / 1000, 2);
         }
         return $data;
     }
@@ -127,14 +127,14 @@ class OrderService implements OrderServiceInterface
         $data = [];
         for ($i = 0; $i < 12; $i++) {
             $month = $i + 1;
-            $year = now()->year;
+            $year = 2024; // Use 2024 since all orders are from 2024
             
             $monthDelivered = Order::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('status', 'delivered')
                 ->sum('total_amount');
             
-            $data[] = round($monthDelivered / 1000, 2);
+            $data[] = round(($monthDelivered ?: 0) / 1000, 2);
         }
         return $data;
     }

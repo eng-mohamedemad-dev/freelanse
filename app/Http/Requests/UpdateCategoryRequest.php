@@ -22,9 +22,11 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'description_ar' => 'nullable|string|max:5000',
+            'description_en' => 'nullable|string|max:5000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
     }
 
@@ -36,12 +38,14 @@ class UpdateCategoryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('admin.validation.category.name_required'),
-            'name.max' => __('admin.validation.category.name_max'),
-            'description.required' => __('admin.validation.category.description_required'),
-            'description.max' => __('admin.validation.category.description_max'),
+            'name_ar.required' => __('admin.validation.category.name_required'),
+            'name_ar.string' => __('admin.validation.category.name_string'),
+            'name_ar.max' => __('admin.validation.category.name_max'),
+            'name_en.required' => __('admin.validation.category.name_required'),
+            'name_en.string' => __('admin.validation.category.name_string'),
+            'name_en.max' => __('admin.validation.category.name_max'),
             'image.image' => __('admin.validation.category.image_image'),
-            'image.mimes' => __('admin.validation.category.image_mimes'),
+            'image.mimes' => __('admin.validation.category.image_mimes') . ' (jpeg, png, jpg, gif, webp)',
             'image.max' => __('admin.validation.category.image_max'),
         ];
     }

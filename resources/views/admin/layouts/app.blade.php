@@ -2,10 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
 
 <head>
-    <title>@yield('title', 'لوحة التحكم')</title>
+    <title>@yield('title', __('admin.dashboard'))</title>
     <meta charset="utf-8">
     <meta name="author" content="themesflat.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/admin/css/animate.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/admin/css/animation.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/admin/css/bootstrap.css') }}">
@@ -250,6 +251,23 @@
         .dark-theme .table tbody tr:nth-child(even) td {
             color: #ffffff;
         }
+        /* وضوح النص داخل خلايا الجداول */
+        .table th,
+        .table td {
+            color: #212529;
+            vertical-align: middle;
+        }
+        .dark-theme .table th,
+        .dark-theme .table td {
+            color: #e9ecef;
+        }
+
+        /* شارات وضوح أعلى */
+        .badge { font-weight: 600; padding: 6px 10px; font-size: 12px; border-radius: 6px; }
+        .badge-info { background-color: #0dcaf0; color: #052c3a; }
+        .badge-success { background-color: #198754; color: #eafff3; }
+        .badge-warning { background-color: #ffc107; color: #3a2f00; }
+        .badge-secondary { background-color: #6c757d; color: #ffffff; }
         
         /* Global Enhanced Pagination Styles */
         .pagination-wrapper {
@@ -763,19 +781,19 @@
         fieldset textarea {
             display: block !important;
             width: 100% !important;
-            padding: 15px 20px !important;
-            border: 2px solid #e9ecef !important;
+            padding: 14px 16px !important;
+            border: 2px solid #ced4da !important; /* أوضح */
             border-radius: 10px !important;
             font-size: 16px !important;
             margin-bottom: 10px !important;
             transition: all 0.3s ease !important;
-            background: #fff !important;
-            color: #333 !important;
+            background: #ffffff !important; /* أبيض صريح */
+            color: #212529 !important;
         }
         
         fieldset input:focus,
         fieldset textarea:focus {
-            border-color: #007bff !important;
+            border-color: #0d6efd !important; /* أزرق بوتستراب */
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
             outline: none !important;
             transform: translateY(-2px) !important;
@@ -807,29 +825,75 @@
         
         .dark-theme fieldset input,
         .dark-theme fieldset textarea {
-            background: #2d3748 !important;
-            border-color: #4a5568 !important;
-            color: #e2e8f0 !important;
+            background: #2b2f36 !important;
+            border-color: #495057 !important;
+            color: #e9ecef !important;
         }
         
         .dark-theme fieldset input:focus,
         .dark-theme fieldset textarea:focus {
-            border-color: #007bff !important;
-            background: #2d3748 !important;
+            border-color: #0d6efd !important;
+            background: #2b2f36 !important;
         }
         
         .dark-theme fieldset input::placeholder,
         .dark-theme fieldset textarea::placeholder {
-            color: #a0aec0 !important;
+            color: #9aa0a6 !important;
         }
         
         .dark-theme fieldset .text-tiny {
-            color: #a0aec0 !important;
+            color: #adb5bd !important;
         }
         
         .dark-theme fieldset .tf-color-1 {
             color: #ff6b6b !important;
         }
+
+        /* تحسين select */
+        .select select {
+            width: 100% !important;
+            padding: 12px 14px !important;
+            border: 2px solid #ced4da !important;
+            border-radius: 10px !important;
+            background: #fff !important;
+            color: #212529 !important;
+        }
+        .select select:focus {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25) !important;
+            outline: none !important;
+        }
+
+        /* أزرار الإجراءات في الجداول (أيقونات) */
+        .list-icon-function {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .list-icon-function .item {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            transition: all .2s ease;
+            cursor: pointer;
+        }
+        .list-icon-function .item i { font-size: 18px; }
+        .list-icon-function .item.eye { color: #0d6efd; }
+        .list-icon-function .item.edit { color: #fd7e14; }
+        .list-icon-function .item.delete, .list-icon-function .item.text-danger { color: #dc3545; }
+        .list-icon-function .item:hover { transform: translateY(-2px); background: #e9ecef; }
+
+        /* نسخة الوضع الداكن */
+        .dark-theme .list-icon-function .item {
+            background: #343a40;
+            border-color: #495057;
+        }
+        .dark-theme .list-icon-function .item:hover { background: #3f474f; }
         
         /* Global Sweet Alert Custom Styling */
         .swal2-popup {
@@ -879,6 +943,25 @@
         .dark-theme .tf-button:hover {
             background: #0056b3;
         }
+
+        /* Sidebar/Header logo styling as circular avatar */
+        #logo_header,
+        #logo_header_mobile {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #ffffff;
+            padding: 2px;
+            border: 2px solid #e9ecef;
+            margin-left: 8px; /* إبعاد الشعار قليلًا عن حافة اليسار */
+        }
+
+        .dark-theme #logo_header,
+        .dark-theme #logo_header_mobile {
+            border-color: #495057;
+            background: #2b2f36;
+        }
         
         /* Dark Theme Sidebar */
         .dark-theme .section-menu-left {
@@ -913,6 +996,84 @@
         .dark-theme .breadcrumbs .text-tiny {
             color: #cccccc;
         }
+        
+        /* Header Notifications Styles */
+        .message-item.unread {
+            background-color: #f8f9fa;
+            border-left: 3px solid #007bff;
+        }
+        
+        .dark-theme .message-item.unread {
+            background-color: #2d3748;
+            border-left-color: #4299e1;
+        }
+        
+        .message-item {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .message-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dark-theme .message-item:hover {
+            background-color: #4a5568;
+        }
+        
+        .message-item .image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+        
+        .dark-theme .message-item .image {
+            background: #4a5568;
+        }
+        
+        .message-item .image i {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        
+        .dark-theme .message-item .image i {
+            color: #a0aec0;
+        }
+        
+        .message-item .body-title-2 {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        
+        .dark-theme .message-item .body-title-2 {
+            color: #e2e8f0;
+        }
+        
+        .message-item .text-tiny {
+            color: #718096;
+            font-size: 12px;
+        }
+        
+        .dark-theme .message-item .text-tiny {
+            color: #a0aec0;
+        }
+        
+        .message-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .message-item .flex-grow {
+            flex: 1;
+        }
     </style>
     @stack('styles')
 </head>
@@ -925,8 +1086,8 @@
                 <div class="section-menu-left">
                     <div class="box-logo">
                         <a href="{{ route('admin.dashboard') }}" id="site-logo-inner">
-                            <img class="" id="logo_header" alt="" src="{{ asset('assets/admin/images/logo/logo.png') }}"
-                                data-light="{{ asset('assets/admin/images/logo/logo.png') }}" data-dark="{{ asset('assets/admin/images/logo/logo.png') }}">
+                            <img class="" id="logo_header" alt="{{ \App\Models\Setting::get('site_name', config('app.name')) }}" src="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}"
+                                data-light="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}" data-dark="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}">
                         </a>
                         <div class="button-show-hide">
                             <i class="icon-menu-left"></i>
@@ -954,7 +1115,7 @@
                                     <ul class="sub-menu">
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.products.create') }}" class="">
-                                                <div class="text">Add Product</div>
+                                                <div class="text">{{ __('admin.add_product') }}</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
@@ -995,11 +1156,59 @@
                                         </li>
                                     </ul>
                                 </li>
+                                <li class="menu-item has-children">
+                                    <a href="javascript:void(0);" class="menu-item-button">
+                                        <div class="icon"><i class="icon-tag"></i></div>
+                                        <div class="text">{{ __('admin.coupons') }}</div>
+                                    </a>
+                                    <ul class="sub-menu">
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.coupons.create') }}" class="">
+                                                <div class="text">{{ __('admin.add_coupon') }}</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.coupons.index') }}" class="">
+                                                <div class="text">{{ __('admin.all_coupons') }}</div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
                                 <li class="menu-item">
                                     <a href="{{ route('admin.users.index') }}" class="">
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">{{ __('admin.users') }}</div>
                                     </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a href="{{ route('admin.reviews.index') }}" class="">
+                                        <div class="icon"><i class="icon-star"></i></div>
+                                        <div class="text">{{ __('admin.reviews') }}</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a href="{{ route('admin.notifications') }}" class="">
+                                        <div class="icon"><i class="icon-bell"></i></div>
+                                        <div class="text">{{ __('admin.notifications') }}</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item has-children">
+                                    <a href="javascript:void(0);" class="menu-item-button">
+                                        <div class="icon"><i class="icon-bar-chart-2"></i></div>
+                                        <div class="text">{{ __('admin.statistics') }}</div>
+                                    </a>
+                                    <ul class="sub-menu">
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.statistics.products') }}" class="">
+                                                <div class="text">{{ __('admin.products_tab') }}</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.statistics.users') }}" class="">
+                                                <div class="text">{{ __('admin.users_tab') }}</div>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                                 <li class="menu-item">
                                     <a href="{{ route('admin.settings') }}" class="">
@@ -1017,9 +1226,9 @@
                         <div class="wrap">
                             <div class="header-left">
                                 <a href="{{ route('admin.dashboard') }}">
-                                    <img class="" id="logo_header_mobile" alt="" src="{{ asset('assets/admin/images/logo/logo.png') }}"
-                                        data-light="{{ asset('assets/admin/images/logo/logo.png') }}" data-dark="{{ asset('assets/admin/images/logo/logo.png') }}"
-                                        data-width="154px" data-height="52px" data-retina="{{ asset('assets/admin/images/logo/logo.png') }}">
+                                    <img class="" id="logo_header_mobile" alt="{{ \App\Models\Setting::get('site_name', config('app.name')) }}" src="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}"
+                                        data-light="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}" data-dark="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}"
+                                        data-width="154px" data-height="52px" data-retina="{{ \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('assets/admin/images/logo/logo.png') }}">
                                 </a>
                                 <div class="button-show-hide">
                                     <i class="icon-menu-left"></i>
@@ -1048,38 +1257,23 @@
                                         <button class="btn btn-secondary dropdown-toggle" type="button"
                                             id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="header-item">
-                                                <span class="text-tiny">1</span>
+                                                <span class="text-tiny" id="notification-count">0</span>
                                                 <i class="icon-bell"></i>
                                             </span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end has-content"
-                                            aria-labelledby="dropdownMenuButton2">
+                                            aria-labelledby="dropdownMenuButton2" id="notifications-dropdown">
                                             <li>
-                                                <h6>Notifications</h6>
+                                                <h6>{{ __('admin.notifications') }}</h6>
                                             </li>
-                                            <li>
-                                                <div class="message-item item-1">
-                                                    <div class="image">
-                                                        <i class="icon-noti-1"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Discount available</div>
-                                                        <div class="text-tiny">New discount codes available for customers</div>
+                                            <li id="notifications-list">
+                                                <div class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
                                                     </div>
                                                 </div>
                                             </li>
-                                            <li>
-                                                <div class="message-item item-2">
-                                                    <div class="image">
-                                                        <i class="icon-noti-2"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Account has been verified</div>
-                                                        <div class="text-tiny">User account verification completed</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li><a href="#" class="tf-button w-full">View all</a></li>
+                                            <li><a href="{{ route('admin.notifications') }}" class="tf-button w-full">{{ __('admin.view_all') }}</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -1097,8 +1291,8 @@
                                                     @endif
                                                 </span>
                                                 <span class="flex flex-column">
-                                                    <span class="body-title mb-2">{{ Auth::user()->name }}</span>
-                                                    <span class="text-tiny">Admin</span>
+                                                    <span class="body-title mb-2">{{ \App\Models\Setting::get('site_name', config('app.name')) }}</span>
+                                                    <span class="text-tiny">{{ Auth::user()->name }}</span>
                                                 </span>
                                             </span>
                                         </button>
@@ -1127,7 +1321,7 @@
                                                         <div class="icon">
                                                             <i class="icon-logout"></i>
                                                         </div>
-                                                        <div class="body-title-2">Logout</div>
+                                                        <div class="body-title-2">{{ __('admin.logout') }}</div>
                                                     </button>
                                                 </form>
                                             </li>
@@ -1164,7 +1358,7 @@
                         </div>
 
                         <div class="bottom-page">
-                            <div class="body-text">Copyright © 2024 SurfsideMedia</div>
+                            <div class="body-text">Copyright © 2025 <a href="https://www.linkedin.com/in/mohamed-emad-eldeen-abdulsattar-607699262/" target="_blank">Eng : Mohamed Emad</a></div>
                         </div>
                     </div>
                 </div>
@@ -1181,23 +1375,15 @@
     
     <script>
     $(document).ready(function() {
-        console.log('Document ready, jQuery loaded');
-        console.log('Language toggle button exists:', $('#language-toggle').length > 0);
-        console.log('Theme toggle button exists:', $('#theme-toggle').length > 0);
-        console.log('Current locale from server:', '{{ app()->getLocale() }}');
-        console.log('Language toggle href:', $('#language-toggle').attr('href'));
+
         
         // Language Toggle with Sweet Alert
         $(document).on('click', '#language-toggle', function(e) {
             e.preventDefault();
-            console.log('Language toggle clicked');
-            console.log('Button href:', $(this).attr('href'));
             
             const currentLang = '{{ app()->getLocale() }}';
             const newLang = currentLang === 'ar' ? 'en' : 'ar';
             const langText = newLang === 'ar' ? 'العربية' : 'English';
-            
-            console.log('Current locale:', currentLang, 'New locale:', newLang);
             
             // Show Sweet Alert first
             Swal.fire({
@@ -1217,7 +1403,6 @@
                 }
             }).then(() => {
                 // Redirect to change language
-                console.log('Redirecting to:', $(this).attr('href'));
                 window.location.href = $(this).attr('href');
             });
         });
@@ -1225,7 +1410,6 @@
         // Theme Toggle
         $(document).on('click', '#theme-toggle', function(e) {
             e.preventDefault();
-            console.log('Theme toggle clicked');
             
             const body = $('body');
             const themeIcon = $('#theme-icon');
@@ -1235,13 +1419,11 @@
                 body.removeClass('dark-theme');
                 themeIcon.removeClass('icon-moon').addClass('icon-sun');
                 localStorage.setItem('theme', 'light');
-                console.log('Switched to light theme');
             } else {
                 // Switch to dark theme
                 body.addClass('dark-theme');
                 themeIcon.removeClass('icon-sun').addClass('icon-moon');
                 localStorage.setItem('theme', 'dark');
-                console.log('Switched to dark theme');
             }
         });
         
@@ -1251,7 +1433,136 @@
             $('body').addClass('dark-theme');
             $('#theme-icon').removeClass('icon-sun').addClass('icon-moon');
         }
+        
+        // Load header notifications
+        loadHeaderNotifications();
+        
+        // Refresh notifications every 30 seconds
+        setInterval(loadHeaderNotifications, 30000);
     });
+    
+    // Function to load header notifications
+    function loadHeaderNotifications() {
+        $.ajax({
+            url: '{{ route("admin.notifications.header") }}',
+            method: 'GET',
+            success: function(response) {
+                console.log('Notifications loaded:', response);
+                updateNotificationCount(response.unread_count);
+                updateNotificationsList(response.notifications);
+            },
+            error: function(xhr, status, error) {
+                console.log('Error loading notifications:', error);
+                console.log('Response:', xhr.responseText);
+            }
+        });
+    }
+    
+    // Function to update notification count
+    function updateNotificationCount(count) {
+        $('#notification-count').text(count);
+        if (count > 0) {
+            $('#notification-count').addClass('badge bg-danger');
+        } else {
+            $('#notification-count').removeClass('badge bg-danger');
+        }
+    }
+    
+    // Function to update notifications list
+    function updateNotificationsList(notifications) {
+        const list = $('#notifications-list');
+        
+        if (notifications.length === 0) {
+            list.html('<div class="text-center py-3 text-muted">لا توجد إشعارات</div>');
+            return;
+        }
+        
+        let html = '';
+        notifications.forEach(function(notification) {
+            const iconClass = getNotificationIcon(notification.type);
+            const timeAgo = getTimeAgo(notification.created_at);
+            const isUnread = !notification.is_read ? 'unread' : '';
+            
+            // Use Arabic text directly since we're in Arabic interface
+            const title = notification.title || 'إشعار';
+            const message = notification.message || 'لا يوجد رسالة';
+            
+            html += `
+                <div class="message-item ${isUnread}" data-id="${notification.id}">
+                    <div class="image">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="body-title-2">${title}</div>
+                        <div class="text-tiny">${message}</div>
+                        <div class="text-tiny text-muted">${timeAgo}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        list.html(html);
+        
+        // Add click handlers for notifications
+        $('.message-item').on('click', function() {
+            const notificationId = $(this).data('id');
+            markNotificationAsRead(notificationId);
+        });
+    }
+    
+    // Function to mark notification as read
+    function markNotificationAsRead(notificationId) {
+        $.ajax({
+            url: `/admin/notifications/${notificationId}/read`,
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Remove unread class and refresh notifications
+                $(`.message-item[data-id="${notificationId}"]`).removeClass('unread');
+                loadHeaderNotifications();
+            },
+            error: function() {
+                console.log('Error marking notification as read');
+            }
+        });
+    }
+    
+    
+    // Function to get notification icon based on type
+    function getNotificationIcon(type) {
+        switch(type) {
+            case 'warning':
+                return 'icon-alert-triangle';
+            case 'error':
+                return 'icon-x-circle';
+            case 'success':
+                return 'icon-check-circle';
+            default:
+                return 'icon-info';
+        }
+    }
+    
+    // Function to get time ago
+    function getTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return 'الآن';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `منذ ${minutes} دقيقة`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `منذ ${hours} ساعة`;
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `منذ ${days} يوم`;
+        }
+    }
     </script>
     
     @stack('scripts')

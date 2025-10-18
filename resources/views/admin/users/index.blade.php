@@ -242,26 +242,22 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    console.log('Users page loaded, initializing search');
     var searchTimeout;
     
     // Real-time search for users
     $('#user-search').on('input', function() {
         const searchTerm = $(this).val();
-        console.log('Search input changed:', searchTerm);
         
         // Clear previous timeout
         clearTimeout(searchTimeout);
         
         // Set new timeout for search
         searchTimeout = setTimeout(function() {
-            console.log('Performing search after timeout:', searchTerm);
             performSearch(searchTerm);
         }, 300);
     });
     
     function performSearch(searchTerm = '') {
-        console.log('performSearch called with:', searchTerm);
         
         $.ajax({
             url: '{{ route("admin.users.index") }}',
@@ -275,13 +271,9 @@ $(document).ready(function() {
                 ajax: 1
             },
             success: function(response) {
-                console.log('Search successful, updating table');
-                console.log('Response:', response);
-                console.log('Response type:', typeof response);
                 
                 if (typeof response === 'string') {
                     // Handle HTML response
-                    console.log('Received HTML response, parsing...');
                     $('.table-responsive').html($(response).find('.table-responsive').html());
                     if ($(response).find('.pagination-wrapper').length > 0) {
                         $('.pagination-wrapper').html($(response).find('.pagination-wrapper').html());
@@ -290,8 +282,6 @@ $(document).ready(function() {
                     }
                 } else if (response && response.html) {
                     // Handle JSON response
-                    console.log('Received JSON response, parsing...');
-                    console.log('HTML content:', response.html);
                     
                     // Update table content directly
                     $('.table-responsive').html(response.html);
@@ -303,14 +293,9 @@ $(document).ready(function() {
                         $('.pagination-wrapper').empty();
                     }
                 } else {
-                    console.error('No HTML content in response');
-                    console.error('Response structure:', response);
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Search failed:', error);
-                console.error('Status:', status);
-                console.error('Response:', xhr.responseText);
             }
         });
     }

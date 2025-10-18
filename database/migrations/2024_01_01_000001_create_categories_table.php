@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('name_ar')->nullable();
+            $table->text('description_ar')->nullable();
+            $table->string('name_en')->nullable();
+            $table->text('description_en')->nullable();
             $table->string('image')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('cascade');

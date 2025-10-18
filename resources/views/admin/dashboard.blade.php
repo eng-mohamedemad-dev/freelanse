@@ -126,29 +126,53 @@
     <div class="wg-box">
         <div class="flex items-center justify-between">
             <h5>{{ __('admin.total_sales') }}</h5>
-            <div class="dropdown default">
-                <button class="btn btn-secondary dropdown-toggle" type="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true"
-                    aria-expanded="false">
-                    <span class="icon-more"><i class="icon-more-horizontal"></i></span>
+            <div class="flex items-center gap-3">
+                <!-- Chart Type Buttons -->
+                <div class="chart-type-buttons">
+                    <button class="chart-type-btn active" data-type="line" title="{{ __('admin.line_chart') }}">
+                        <i class="icon-trending-up"></i>
+                    </button>
+                    <button class="chart-type-btn" data-type="bar" title="{{ __('admin.bar_chart') }}">
+                        <i class="icon-bar-chart"></i>
+                    </button>
+                    <button class="chart-type-btn" data-type="area" title="{{ __('admin.area_chart') }}">
+                        <i class="icon-layers"></i>
+                    </button>
+                    <button class="chart-type-btn" data-type="pie" title="{{ __('admin.pie_chart') }}">
+                        <i class="icon-pie-chart"></i>
+                    </button>
+                </div>
+                
+                <!-- Download Chart Button -->
+                <button class="btn btn-outline-success chart-type-btn" id="download-stats-chart-btn" title="{{ __('admin.download_chart') }}">
+                    <i class="icon-download"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a href="javascript:void(0);" class="sales-filter" data-period="this_month">{{ __('admin.this_month') }}</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" class="sales-filter" data-period="last_month">{{ __('admin.last_month') }}</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" class="sales-filter" data-period="last_3_months">{{ __('admin.last_3_months') }}</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" class="sales-filter" data-period="last_6_months">{{ __('admin.last_6_months') }}</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" class="sales-filter" data-period="this_year">{{ __('admin.this_year') }}</a>
-                    </li>
-                </ul>
+                
+                <!-- Period Filter Dropdown -->
+                <div class="dropdown default">
+                    <button class="btn btn-secondary dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        <span class="icon-more"><i class="icon-more-horizontal"></i></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a href="javascript:void(0);" class="sales-filter" data-period="this_month">{{ __('admin.this_month') }}</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" class="sales-filter" data-period="last_month">{{ __('admin.last_month') }}</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" class="sales-filter" data-period="last_3_months">{{ __('admin.last_3_months') }}</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" class="sales-filter" data-period="last_6_months">{{ __('admin.last_6_months') }}</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" class="sales-filter" data-period="this_year">{{ __('admin.this_year') }}</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
         <div class="flex flex-wrap gap40">
@@ -267,7 +291,7 @@
                                 <td colspan="11" class="text-center py-20">
                                     <div class="text-center">
                                         <i class="icon-shopping-bag" style="font-size: 48px; color: #ccc;"></i>
-                                        <p class="mt-10">No orders yet</p>
+                                        <p class="mt-10">{{ __('admin.no_orders_yet') }}</p>
                                     </div>
                                 </td>
                             </tr>
@@ -458,6 +482,66 @@
         }
     }
     
+    /* Chart Type Buttons */
+    .chart-type-buttons {
+        display: flex;
+        gap: 4px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .chart-type-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #6c757d;
+        font-size: 16px;
+    }
+    
+    .chart-type-btn:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .chart-type-btn.active {
+        background: #007bff;
+        color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    }
+    
+    .chart-type-btn i {
+        font-size: 14px;
+    }
+    
+    /* Dark Theme Chart Type Buttons */
+    .dark-theme .chart-type-buttons {
+        background: #4a5568;
+        border-color: #718096;
+    }
+    
+    .dark-theme .chart-type-btn {
+        color: #a0aec0;
+    }
+    
+    .dark-theme .chart-type-btn:hover {
+        background: #718096;
+        color: #e2e8f0;
+    }
+    
+    .dark-theme .chart-type-btn.active {
+        background: #007bff;
+        color: #ffffff;
+    }
+    
     /* Dark Theme Chart Styling */
     .dark-theme #line-chart-8 .apexcharts-canvas {
         background: #2d3748 !important;
@@ -584,16 +668,37 @@
     (function ($) {
         var tfLineChart = (function () {
             var chartBar = function () {
+                // Ensure we have valid data for the chart
+                var revenueData = @json($salesData['revenue'] ?? array_fill(0, 12, 0));
+                var pendingData = @json($salesData['pending'] ?? array_fill(0, 12, 0));
+                var deliveredData = @json($salesData['delivered'] ?? array_fill(0, 12, 0));
+                
+                // Validate data arrays
+                if (!Array.isArray(revenueData) || revenueData.length === 0) {
+                    revenueData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                }
+                if (!Array.isArray(pendingData) || pendingData.length === 0) {
+                    pendingData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                }
+                if (!Array.isArray(deliveredData) || deliveredData.length === 0) {
+                    deliveredData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                }
+                
+                // Ensure all arrays have 12 elements
+                while (revenueData.length < 12) revenueData.push(0);
+                while (pendingData.length < 12) pendingData.push(0);
+                while (deliveredData.length < 12) deliveredData.push(0);
+                
                 var options = {
                     series: [{
                         name: '{{ __('admin.current_month_sales') }}',
-                        data: [{{ implode(',', $salesData['revenue'] ?? [0,0,0,0,0,0,0,0,0,0,0,0]) }}]
+                        data: revenueData
                     }, {
                         name: '{{ __('admin.last_month_sales') }}',
-                        data: [{{ implode(',', $salesData['pending'] ?? [0,0,0,0,0,0,0,0,0,0,0,0]) }}]
+                        data: pendingData
                     }, {
                         name: '{{ __('admin.comparison_with_last_month') }}',
-                        data: [{{ implode(',', $salesData['delivered'] ?? [0,0,0,0,0,0,0,0,0,0,0,0]) }}]
+                        data: deliveredData
                     }],
                     chart: {
                         type: 'line',
@@ -601,8 +706,8 @@
                         toolbar: {
                             show: false
                         },
-                        background: '#ffffff',
-                        foreColor: '#333333',
+                        background: $('body').hasClass('dark-theme') ? '#2d3748' : '#ffffff',
+                        foreColor: $('body').hasClass('dark-theme') ? '#e2e8f0' : '#333333',
                         animations: {
                             enabled: true,
                             easing: 'easeinout',
@@ -666,17 +771,19 @@
                     },
                     colors: ['#667eea', '#f093fb', '#4facfe'],
                     legend: {
-                        show: false
+                        show: true,
+                        position: 'top',
+                        horizontalAlign: 'right'
                     },
                     grid: {
-                        borderColor: '#e0e0e0',
+                        borderColor: $('body').hasClass('dark-theme') ? '#4a5568' : '#e0e0e0',
                         strokeDashArray: 3,
                         row: {
-                            colors: ['#f8f9fa', 'transparent'],
+                            colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
                             opacity: 0.3
                         },
                         column: {
-                            colors: ['#f8f9fa', 'transparent'],
+                            colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
                             opacity: 0.3
                         }
                     },
@@ -719,8 +826,39 @@
                     }
                 };
 
-                var chart = new ApexCharts(document.querySelector("#line-chart-8"), options);
-                chart.render();
+                try {
+                    // Check if chart container exists
+                    const chartContainer = document.querySelector("#line-chart-8");
+                    if (!chartContainer) {
+                        console.error('Chart container not found');
+                        return;
+                    }
+                    
+                    // Create and render chart
+                    window.salesChart = new ApexCharts(chartContainer, options);
+                    window.salesChart.render();
+                    
+                // Store current chart type and data
+                window.currentChartType = 'line';
+                window.originalChartData = {
+                    revenue: revenueData,
+                    pending: pendingData,
+                    delivered: deliveredData
+                };
+                    
+                    console.log('Chart created successfully');
+                } catch (error) {
+                    console.error('Error creating chart:', error);
+                    // Show error message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ في الرسم البياني',
+                            text: 'حدث خطأ أثناء إنشاء الرسم البياني: ' + error.message,
+                            confirmButtonText: 'موافق'
+                        });
+                    }
+                }
             };
 
             return {
@@ -734,12 +872,97 @@
             // Check if ApexCharts is loaded
             if (typeof ApexCharts !== 'undefined') {
                 tfLineChart.init();
+                initChartButtons();
             } else {
                 console.error('ApexCharts is not loaded');
                 // Load ApexCharts dynamically if not loaded
                 $.getScript('https://cdn.jsdelivr.net/npm/apexcharts', function() {
                     tfLineChart.init();
+                    initChartButtons();
                 });
+            }
+            
+            // Initialize chart buttons after a short delay to ensure chart is ready
+            setTimeout(function() {
+                initChartButtons();
+            }, 1000);
+            
+            // Also try to initialize after chart is created
+            setTimeout(function() {
+                initChartButtons();
+            }, 3000);
+            
+            // Function to initialize chart buttons
+            function initChartButtons() {
+
+                // Remove existing event handlers
+                $('.chart-type-btn').off('click');
+                
+                // Add new event handlers
+                $('.chart-type-btn').on('click', function(e) {
+                    e.preventDefault();
+                    const chartType = $(this).data('type');
+                    
+                    // Skip download button and invalid types
+                    if (chartType === 'download' || !chartType || chartType === 'undefined') {
+                        return;
+                    }
+                    
+                    // Update active button
+                    $('.chart-type-btn').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    // Update chart type
+                    updateChartType(chartType);
+                });
+                
+            }
+            
+            // Function to get chart instance
+            function getChartInstance() {
+                // Try window.salesChart first
+                if (window.salesChart) {
+                    return window.salesChart;
+                }
+                
+                // Try to get from element
+                const chartElement = document.querySelector("#line-chart-8");
+                if (chartElement && chartElement._apexChart) {
+                    return chartElement._apexChart;
+                }
+                
+                // Try to find chart by looking for ApexCharts instances in all elements
+                const allElements = document.querySelectorAll('*');
+                for (let element of allElements) {
+                    if (element._apexChart) {
+                        return element._apexChart;
+                    }
+                }
+                
+                // Try to find chart in global scope
+                if (window.ApexCharts) {
+                    try {
+                        const charts = window.ApexCharts.getCharts();
+                        if (charts && charts.length > 0) {
+                            return charts[0];
+                        }
+                    } catch (e) {
+                    }
+                }
+                
+                // Try to find chart by looking for it in the element
+                if (chartElement) {
+                    const chartContainer = chartElement.querySelector('.apexcharts-canvas');
+                    if (chartContainer) {
+                        // Try to get chart instance from canvas
+                        const chartInstance = chartContainer._apexChart || chartContainer.chart;
+                        if (chartInstance) {
+                            return chartInstance;
+                        }
+                    }
+                }
+                
+                return null;
             }
             
             // Handle theme change for chart
@@ -775,6 +998,640 @@
                     });
                 }
             });
+            
+            // Function to update chart type
+            function updateChartType(type) {
+                try {
+                    // Get chart instance
+                    const chartInstance = getChartInstance();
+                    
+                    if (!chartInstance) {
+                        console.error('Sales chart not found');
+                        
+                        // Try to find chart manually
+                        const chartElement = document.querySelector("#line-chart-8");
+                        if (chartElement) {
+                            // Try to access chart through different methods
+                            if (chartElement._apexChart) {
+                                updateChartWithInstance(chartElement._apexChart, type);
+                                return;
+                            }
+                            
+                            // Try to find chart in global scope
+                            if (window.ApexCharts) {
+                                
+                                // Try to get chart from ApexCharts registry
+                                try {
+                                    const charts = window.ApexCharts.getCharts();
+                                    if (charts && charts.length > 0) {
+                                        updateChartWithInstance(charts[0], type);
+                                        return;
+                                    }
+                                } catch (e) {
+                                    console.error('Error getting charts from registry:', e);
+                                }
+                                
+                                // Try to find chart by looking for it in the element
+                                const chartContainer = chartElement.querySelector('.apexcharts-canvas');
+                                if (chartContainer) {
+                                    // Try to get chart instance from canvas
+                                    const chartInstance = chartContainer._apexChart || chartContainer.chart;
+                                    if (chartInstance) {
+                                        updateChartWithInstance(chartInstance, type);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If still no chart found, recreate it
+                        console.log('No chart instance found, recreating chart');
+                        if (window.originalChartData) {
+                            // Recreate chart with stored data
+                            const chartElement = document.querySelector("#line-chart-8");
+                            if (chartElement) {
+                                chartElement.innerHTML = '';
+                                
+                                const { revenue, pending, delivered } = window.originalChartData;
+                                const options = {
+                                    series: [{
+                                        name: '{{ __('admin.current_month_sales') }}',
+                                        data: revenue
+                                    }, {
+                                        name: '{{ __('admin.last_month_sales') }}',
+                                        data: pending
+                                    }, {
+                                        name: '{{ __('admin.comparison_with_last_month') }}',
+                                        data: delivered
+                                    }],
+                                    chart: {
+                                        type: type,
+                                        height: 400,
+                                        toolbar: { show: false },
+                                        background: $('body').hasClass('dark-theme') ? '#2d3748' : '#ffffff',
+                                        foreColor: $('body').hasClass('dark-theme') ? '#e2e8f0' : '#333333'
+                                    },
+                                    colors: ['#667eea', '#f093fb', '#4facfe'],
+                                    legend: { show: true, position: 'top', horizontalAlign: 'right' },
+                                    dataLabels: { enabled: false }
+                                };
+                                
+                                window.salesChart = new ApexCharts(chartElement, options);
+                                window.salesChart.render();
+                                window.currentChartType = type;
+                                console.log('Chart recreated successfully');
+                            }
+                        }
+                        return;
+                    }
+                    
+                    updateChartWithInstance(chartInstance, type);
+                } catch (error) {
+                    console.error('Error in updateChartType:', error);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ في تحديث الرسم البياني',
+                            text: 'حدث خطأ أثناء تحديث نوع الرسم البياني: ' + error.message,
+                            confirmButtonText: 'موافق'
+                        });
+                    }
+                }
+            }
+            
+            // Helper function to update chart with instance
+            function updateChartWithInstance(chartInstance, type) {
+                try {
+                    console.log('Updating chart with type:', type);
+                    
+                    // Get original data from the chart
+                    const originalOptions = chartInstance.w.globals.initialConfig;
+                    const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 
+                                  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+                    
+                    // Get the original series data safely
+                    let originalSeries = [];
+                    
+                    // First try to get data from stored original data
+                    if (window.originalChartData) {
+                        const { revenue, pending, delivered } = window.originalChartData;
+                        originalSeries = [{
+                            name: '{{ __('admin.current_month_sales') }}',
+                            data: revenue
+                        }, {
+                            name: '{{ __('admin.last_month_sales') }}',
+                            data: pending
+                        }, {
+                            name: '{{ __('admin.comparison_with_last_month') }}',
+                            data: delivered
+                        }];
+                    } else if (originalOptions && originalOptions.series && Array.isArray(originalOptions.series)) {
+                        originalSeries = originalOptions.series;
+                    } else {
+                        // Fallback to default data - use the same data as initial chart
+                        var revenueData = @json($salesData['revenue'] ?? array_fill(0, 12, 0));
+                        var pendingData = @json($salesData['pending'] ?? array_fill(0, 12, 0));
+                        var deliveredData = @json($salesData['delivered'] ?? array_fill(0, 12, 0));
+                        
+                        // Validate data arrays
+                        if (!Array.isArray(revenueData) || revenueData.length === 0) {
+                            revenueData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                        }
+                        if (!Array.isArray(pendingData) || pendingData.length === 0) {
+                            pendingData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                        }
+                        if (!Array.isArray(deliveredData) || deliveredData.length === 0) {
+                            deliveredData = [0,0,0,0,0,0,0,0,0,0,0,0];
+                        }
+                        
+                        // Ensure all arrays have 12 elements
+                        while (revenueData.length < 12) revenueData.push(0);
+                        while (pendingData.length < 12) pendingData.push(0);
+                        while (deliveredData.length < 12) deliveredData.push(0);
+                        
+                        originalSeries = [{
+                            name: '{{ __('admin.current_month_sales') }}',
+                            data: revenueData
+                        }, {
+                            name: '{{ __('admin.last_month_sales') }}',
+                            data: pendingData
+                        }, {
+                            name: '{{ __('admin.comparison_with_last_month') }}',
+                            data: deliveredData
+                        }];
+                    }
+                    
+                    // Ensure series data is valid
+                    if (!originalSeries || !Array.isArray(originalSeries) || originalSeries.length === 0) {
+                        // Create default series if none exist
+                        originalSeries = [{
+                            name: '{{ __('admin.current_month_sales') }}',
+                            data: [0,0,0,0,0,0,0,0,0,0,0,0]
+                        }, {
+                            name: '{{ __('admin.last_month_sales') }}',
+                            data: [0,0,0,0,0,0,0,0,0,0,0,0]
+                        }, {
+                            name: '{{ __('admin.comparison_with_last_month') }}',
+                            data: [0,0,0,0,0,0,0,0,0,0,0,0]
+                        }];
+                    }
+                    
+                    // Ensure series data is properly formatted
+                    const formattedSeries = originalSeries.map(series => ({
+                        name: series.name,
+                        data: Array.isArray(series.data) ? series.data.map(val => parseFloat(val) || 0) : [0,0,0,0,0,0,0,0,0,0,0,0]
+                    }));
+                    
+                    // Create new options based on type
+                    let newOptions = {
+                        chart: {
+                            type: type,
+                            height: 400,
+                            toolbar: {
+                                show: false
+                            },
+                            background: $('body').hasClass('dark-theme') ? '#2d3748' : '#ffffff',
+                            foreColor: $('body').hasClass('dark-theme') ? '#e2e8f0' : '#333333',
+                            animations: {
+                                enabled: true,
+                                easing: 'easeinout',
+                                speed: 800,
+                                animateGradually: {
+                                    enabled: true,
+                                    delay: 150
+                                },
+                                dynamicAnimation: {
+                                    enabled: true,
+                                    speed: 350
+                                }
+                            }
+                        },
+                        series: formattedSeries,
+                        colors: ['#667eea', '#f093fb', '#4facfe'],
+                        legend: {
+                            show: true,
+                            position: 'top',
+                            horizontalAlign: 'right'
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        grid: {
+                            borderColor: $('body').hasClass('dark-theme') ? '#4a5568' : '#e0e0e0',
+                            strokeDashArray: 3,
+                            row: {
+                                colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
+                                opacity: 0.3
+                            },
+                            column: {
+                                colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
+                                opacity: 0.3
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            shared: true,
+                            intersect: false,
+                            style: {
+                                fontSize: '12px'
+                            },
+                            y: {
+                                formatter: function (val) {
+                                    return '$' + val.toFixed(2) + 'K';
+                                }
+                            },
+                            marker: {
+                                show: true
+                            }
+                        }
+                    };
+                    
+                    // Type-specific configurations
+                    if (type === 'line') {
+                        newOptions.stroke = {
+                            curve: 'smooth',
+                            width: 3,
+                            lineCap: 'round'
+                        };
+                        newOptions.markers = {
+                            size: 6,
+                            strokeWidth: 2,
+                            strokeColors: '#ffffff',
+                            hover: {
+                                size: 8
+                            }
+                        };
+                        newOptions.fill = {
+                            type: 'gradient',
+                            gradient: {
+                                shade: 'light',
+                                type: 'vertical',
+                                shadeIntensity: 0.3,
+                                gradientToColors: ['#667eea', '#f093fb', '#4facfe'],
+                                inverseColors: false,
+                                opacityFrom: 0.7,
+                                opacityTo: 0.1,
+                                stops: [0, 100]
+                            }
+                        };
+                        newOptions.xaxis = {
+                            categories: months,
+                            title: {
+                                text: '{{ __('admin.months') }}',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            }
+                        };
+                        newOptions.yaxis = {
+                            title: {
+                                text: '{{ __('admin.sales_amount') }} ($)',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                formatter: function (val) {
+                                    return '$' + val.toFixed(1) + 'K';
+                                },
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            },
+                            min: 0
+                        };
+                    } else if (type === 'bar') {
+                        newOptions.plotOptions = {
+                            bar: {
+                                borderRadius: 6,
+                                columnWidth: '45%',
+                                distributed: false
+                            }
+                        };
+                        newOptions.xaxis = {
+                            categories: months,
+                            title: {
+                                text: '{{ __('admin.months') }}',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            }
+                        };
+                        newOptions.yaxis = {
+                            title: {
+                                text: '{{ __('admin.sales_amount') }} ($)',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                formatter: function (val) {
+                                    return '$' + val.toFixed(1) + 'K';
+                                },
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            },
+                            min: 0
+                        };
+                    } else if (type === 'area') {
+                        newOptions.stroke = {
+                            curve: 'smooth',
+                            width: 2
+                        };
+                        newOptions.fill = {
+                            type: 'gradient',
+                            gradient: {
+                                shade: 'light',
+                                type: 'vertical',
+                                shadeIntensity: 0.3,
+                                gradientToColors: ['#667eea', '#f093fb', '#4facfe'],
+                                inverseColors: false,
+                                opacityFrom: 0.7,
+                                opacityTo: 0.1,
+                                stops: [0, 100]
+                            }
+                        };
+                        newOptions.xaxis = {
+                            categories: months,
+                            title: {
+                                text: '{{ __('admin.months') }}',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            }
+                        };
+                        newOptions.yaxis = {
+                            title: {
+                                text: '{{ __('admin.sales_amount') }} ($)',
+                                style: {
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#333333'
+                                }
+                            },
+                            labels: {
+                                formatter: function (val) {
+                                    return '$' + val.toFixed(1) + 'K';
+                                },
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    colors: '#666666'
+                                }
+                            },
+                            min: 0
+                        };
+                    } else if (type === 'pie') {
+                        // For pie chart, use only the first series (revenue)
+                        const revenueData = originalSeries[0] && originalSeries[0].data ? originalSeries[0].data : [0,0,0,0,0,0,0,0,0,0,0,0];
+                        const pieData = [];
+                        const pieLabels = [];
+                        
+                        if (Array.isArray(revenueData)) {
+                            revenueData.forEach((value, index) => {
+                                if (value > 0) {
+                                    pieData.push(parseFloat(value) || 0);
+                                    pieLabels.push(months[index]);
+                                }
+                            });
+                        }
+                        
+                        // If no data, create default
+                        if (pieData.length === 0) {
+                            pieData.push(1);
+                            pieLabels.push('لا توجد بيانات');
+                        }
+                        
+                        newOptions.series = pieData;
+                        newOptions.labels = pieLabels;
+                        newOptions.legend = {
+                            position: 'bottom',
+                            horizontalAlign: 'center'
+                        };
+                        newOptions.plotOptions = {
+                            pie: {
+                                donut: {
+                                    size: '70%'
+                                }
+                            }
+                        };
+                        newOptions.dataLabels = {
+                            enabled: true,
+                            formatter: function (val, opts) {
+                                return val.toFixed(1) + "%";
+                            },
+                            style: {
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                colors: $('body').hasClass('dark-theme') ? ['#ffffff'] : ['#000000']
+                            }
+                        };
+                        // Remove xaxis and yaxis for pie chart
+                        delete newOptions.xaxis;
+                        delete newOptions.yaxis;
+                    }
+                    
+                    // Destroy and recreate chart
+                    try {
+                        chartInstance.destroy();
+                    } catch (e) {
+                        console.log('Chart already destroyed or not found');
+                    }
+                    
+                    // Clear the chart container
+                    const chartElement = document.querySelector("#line-chart-8");
+                    if (chartElement) {
+                        chartElement.innerHTML = '';
+                        
+                        // Add a small delay to ensure the container is cleared
+                        setTimeout(() => {
+                            // Create new chart with updated options
+                            window.salesChart = new ApexCharts(chartElement, newOptions);
+                            window.salesChart.render();
+                            
+                            // Store current chart type
+                            window.currentChartType = type;
+                            
+                            // Update stored data if it's not already stored
+                            if (!window.originalChartData) {
+                                window.originalChartData = {
+                                    revenue: formattedSeries[0].data,
+                                    pending: formattedSeries[1].data,
+                                    delivered: formattedSeries[2].data
+                                };
+                            }
+                            
+                            console.log('Chart updated successfully');
+                        }, 100);
+                        return;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error updating chart:', error);
+                }
+            }
+            
+            // Handle chart download - separate event handler
+            $(document).on('click', '#download-stats-chart-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Download button clicked');
+                downloadChart();
+            });
+            
+            function downloadChart() {
+                try {
+                    console.log('downloadChart function called');
+                    console.log('window.salesChart:', window.salesChart);
+                    
+                    if (window.salesChart) {
+                        // Get current chart type
+                        const currentType = window.currentChartType || 'line';
+                        const fileName = `sales-chart-${currentType}-${new Date().toISOString().split('T')[0]}.png`;
+                        
+                        console.log('Downloading chart with type:', currentType);
+                        console.log('Chart instance:', window.salesChart);
+                        
+                        // Wait a bit to ensure chart is fully rendered
+                        setTimeout(() => {
+                            try {
+                                // Download the chart
+                                window.salesChart.dataURI({
+                                    scale: 2,
+                                    width: 1200,
+                                    height: 600,
+                                    type: 'png'
+                                }).then((uri) => {
+                                    console.log('Download URI received:', typeof uri, uri);
+                                    
+                                    // Handle both string and object responses
+                                    let dataUri = uri;
+                                    if (typeof uri === 'object' && uri.imgURI) {
+                                        dataUri = uri.imgURI;
+                                    } else if (typeof uri === 'object' && uri.uri) {
+                                        dataUri = uri.uri;
+                                    }
+                                    
+                                    // Ensure we have a string
+                                    if (typeof dataUri !== 'string') {
+                                        throw new Error('Invalid data URI format');
+                                    }
+                                    
+                                    // Create a blob from the data URI
+                                    const byteString = atob(dataUri.split(',')[1]);
+                                    const mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0];
+                                    const ab = new ArrayBuffer(byteString.length);
+                                    const ia = new Uint8Array(ab);
+                                    for (let i = 0; i < byteString.length; i++) {
+                                        ia[i] = byteString.charCodeAt(i);
+                                    }
+                                    const blob = new Blob([ab], { type: mimeString });
+                                    
+                                    // Create download link
+                                    const link = document.createElement('a');
+                                    link.href = URL.createObjectURL(blob);
+                                    link.download = fileName;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    
+                                    // Clean up the URL object
+                                    URL.revokeObjectURL(link.href);
+                                    
+                                    console.log('Chart downloaded successfully');
+                                    
+                                    // Show success message
+                                    if (typeof Swal !== 'undefined') {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'تم التحميل بنجاح',
+                                            text: 'تم تحميل الرسم البياني بنجاح',
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        });
+                                    }
+                                }).catch((error) => {
+                                    console.error('Error downloading chart:', error);
+                                    if (typeof Swal !== 'undefined') {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'خطأ في التحميل',
+                                            text: 'خطأ في تحميل الرسم البياني: ' + error.message,
+                                            confirmButtonText: 'موافق'
+                                        });
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in download timeout:', error);
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'خطأ في التحميل',
+                                        text: 'خطأ في تحميل الرسم البياني',
+                                        confirmButtonText: 'موافق'
+                                    });
+                                }
+                            }
+                        }, 500); // Wait 500ms for chart to be fully rendered
+                    } else {
+                        console.error('Chart instance not found');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'تحذير',
+                                text: 'الرسم البياني غير موجود',
+                                confirmButtonText: 'موافق'
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in downloadChart:', error);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ في التحميل',
+                            text: 'خطأ في تحميل الرسم البياني: ' + error.message,
+                            confirmButtonText: 'موافق'
+                        });
+                    }
+                }
+            }
             
             // Handle sales filter
             $('.sales-filter').on('click', function(e) {
@@ -819,7 +1676,6 @@
         function updateChart(chartData) {
             // Check if ApexCharts is available
             if (typeof ApexCharts === 'undefined') {
-                console.error('ApexCharts is not available');
                 return;
             }
             
@@ -846,8 +1702,8 @@
                     toolbar: {
                         show: false
                     },
-                    background: '#ffffff',
-                    foreColor: '#333333',
+                    background: $('body').hasClass('dark-theme') ? '#2d3748' : '#ffffff',
+                    foreColor: $('body').hasClass('dark-theme') ? '#e2e8f0' : '#333333',
                     animations: {
                         enabled: true,
                         easing: 'easeinout',
@@ -884,7 +1740,7 @@
                         style: {
                             fontSize: '12px',
                             fontWeight: '600',
-                            colors: '#666666'
+                            colors: $('body').hasClass('dark-theme') ? '#a0aec0' : '#666666'
                         }
                     }
                 },
@@ -904,7 +1760,7 @@
                         style: {
                             fontSize: '12px',
                             fontWeight: '600',
-                            colors: '#666666'
+                            colors: $('body').hasClass('dark-theme') ? '#a0aec0' : '#666666'
                         }
                     },
                     min: 0
@@ -914,14 +1770,14 @@
                     show: false
                 },
                 grid: {
-                    borderColor: '#e0e0e0',
+                    borderColor: $('body').hasClass('dark-theme') ? '#4a5568' : '#e0e0e0',
                     strokeDashArray: 3,
                     row: {
-                        colors: ['#f8f9fa', 'transparent'],
+                        colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
                         opacity: 0.3
                     },
                     column: {
-                        colors: ['#f8f9fa', 'transparent'],
+                        colors: $('body').hasClass('dark-theme') ? ['#2d3748', 'transparent'] : ['#f8f9fa', 'transparent'],
                         opacity: 0.3
                     }
                 },
@@ -968,5 +1824,14 @@
             window.salesChart.render();
         }
     })(jQuery);
+    
+    // Re-render charts when theme changes
+    $(document).on('themeChanged', function() {
+        setTimeout(function() {
+            if (window.statsChart) {
+                window.statsChart.render();
+            }
+        }, 100);
+    });
 </script>
 @endpush

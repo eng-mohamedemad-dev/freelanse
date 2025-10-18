@@ -22,14 +22,23 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'variants' => 'nullable|array',
+            'variants.*.size_id' => 'nullable|exists:sizes,id',
+            'variants.*.color_id' => 'nullable|exists:colors,id',
+            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.stock' => 'nullable|integer|min:0',
+            'variants.*.images' => 'nullable|array',
+            'variants.*.images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
     }
 
@@ -41,9 +50,10 @@ class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('admin.validation.product.name_required'),
-            'name.max' => __('admin.validation.product.name_max'),
-            'description.required' => __('admin.validation.product.description_required'),
+            'name_ar.required' => __('admin.validation.product.name_required'),
+            'name_ar.max' => __('admin.validation.product.name_max'),
+            'name_en.required' => __('admin.validation.product.name_required'),
+            'name_en.max' => __('admin.validation.product.name_max'),
             'category_id.required' => __('admin.validation.product.category_id_required'),
             'category_id.exists' => __('admin.validation.product.category_id_exists'),
             'images.*.image' => __('admin.validation.product.images_image'),

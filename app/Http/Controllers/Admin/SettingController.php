@@ -13,6 +13,7 @@ class SettingController extends Controller
     {
         $settings = [
             'site_logo' => Setting::get('site_logo', ''),
+            'site_name' => Setting::get('site_name', config('app.name')),
             'points_system_enabled' => Setting::getBoolean('points_system_enabled', false),
             'points_count' => Setting::getInteger('points_count', 20),
             'points_discount' => Setting::getInteger('points_discount', 1),
@@ -27,7 +28,8 @@ class SettingController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'site_name' => 'nullable|string|max:255',
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'points_system_enabled' => 'boolean',
             'points_count' => 'required_if:points_system_enabled,1|integer|min:1',
             'points_discount' => 'required_if:points_system_enabled,1|integer|min:1|max:100',
@@ -78,21 +80,25 @@ class SettingController extends Controller
             Setting::set('wheel_prizes', []);
         }
 
+        // Update site name
+        Setting::set('site_name', $request->site_name ?? config('app.name'));
+
         // Handle logo upload
         if ($request->hasFile('site_logo')) {
             $logo = $request->file('site_logo');
-            $filename = 'logo_' . time() . '.' . $logo->getClientOriginalExtension();
-            
-            // Move file directly to public/uploads/settings directory
-            $logo->move(public_path('uploads/settings'), $filename);
+            $ext = strtolower($logo->getClientOriginalExtension() ?: 'png');
+            $uploadDir = public_path('uploads/settings');
+            if (!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
+
+            // Remove any previous logo.* files to keep واحد فقط
+            foreach (glob($uploadDir . '/logo.*') as $old) { @unlink($old); }
+
+            // Save as logo.{ext}
+            $filename = 'logo.' . $ext;
+            $logo->move($uploadDir, $filename);
             $path = 'uploads/settings/' . $filename;
-            
-            // Delete old logo if exists
-            $oldLogo = Setting::get('site_logo');
-            if ($oldLogo && file_exists(public_path($oldLogo))) {
-                unlink(public_path($oldLogo));
-            }
-            
+
+            // Keep Setting for other أماكن تستخدمه
             Setting::set('site_logo', $path);
         }
 

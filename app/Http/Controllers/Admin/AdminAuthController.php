@@ -34,8 +34,20 @@ class AdminAuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             
-            return redirect()->intended(route('admin.dashboard'))
-                ->with('success', 'مرحباً بك في لوحة التحكم!');
+            $user = Auth::user();
+            
+            // التحقق من دور المستخدم وإعادة التوجيه المناسب
+            if ($user->isAdmin()) {
+                return redirect()->intended(route('admin.dashboard'))
+                    ->with('success', 'مرحباً بك في لوحة التحكم!');
+            } else {
+                // تسجيل خروج المستخدمين العاديين من لوحة الإدارة
+                Auth::logout();
+                
+                return back()->withErrors([
+                    'email' => 'ليس لديك صلاحية للوصول إلى لوحة التحكم.',
+                ])->withInput($request->only('email'));
+            }
         }
 
         return back()->withErrors([
@@ -74,6 +86,7 @@ class AdminAuthController extends Controller
             'email' => 'admin@admin.com',
             'password' => Hash::make('123456'),
             'role' => 'admin',
+            'email_verified_at' => now(),
         ]);
 
         return redirect()->route('admin.login')

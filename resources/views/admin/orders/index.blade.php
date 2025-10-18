@@ -310,7 +310,6 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    console.log('Orders page loaded, initializing search and filter');
     let searchTimeout;
     
     // Initialize event handlers
@@ -332,7 +331,6 @@ $(document).ready(function() {
     function performSearch(searchTerm) {
         const status = $('#status-filter').val();
         
-        console.log('Performing search:', searchTerm, 'with status:', status);
         
         $.ajax({
             url: '{{ route("admin.orders.index") }}',
@@ -344,12 +342,8 @@ $(document).ready(function() {
                 ajax: 1
             },
             success: function(response) {
-                console.log('Search successful, updating table');
-                console.log('Response:', response);
                 
                 if (response.html) {
-                    console.log('HTML content:', response.html);
-                    
                     // Update table content directly
                     $('.table-responsive').html(response.html);
                     
@@ -363,12 +357,9 @@ $(document).ready(function() {
                     // Re-initialize event handlers for new content
                     initializeEventHandlers();
                 } else {
-                    console.error('No HTML content in response');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Search failed:', error);
-                console.error('Response:', xhr.responseText);
             }
         });
     }
@@ -401,7 +392,6 @@ $(document).ready(function() {
     // Filter change handlers
     $('#status-filter').on('change', function() {
         const searchTerm = $('#order-search').val();
-        console.log('Filter changed, performing search:', searchTerm, 'with status:', $(this).val());
         performSearch(searchTerm);
     });
     
@@ -436,7 +426,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}/mark-completed`,
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -458,7 +449,8 @@ $(document).ready(function() {
                             location.reload();
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: 'خطأ!',
@@ -509,7 +501,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}/mark-cancelled`,
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -531,7 +524,8 @@ $(document).ready(function() {
                             location.reload();
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: 'خطأ!',
@@ -582,7 +576,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}`,
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -604,7 +599,8 @@ $(document).ready(function() {
                             location.reload();
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: 'خطأ!',

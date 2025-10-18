@@ -17,20 +17,20 @@
                     <td>{{ $product->id }}</td>
                     <td class="pname">
                         <div class="image">
-                            <img src="{{ $product->images && count($product->images) > 0 ? asset($product->images[0]) : asset('uploads/products/default.png') }}" alt="{{ $product->name }}" class="image">
+                            <img src="{{ $product->images && count($product->images) > 0 ? asset($product->images[0]) : asset('uploads/products/default.png') }}" alt="{{ $product->display_name }}" class="image">
                         </div>
                         <div class="name">
-                            <a href="{{ route('admin.products.show', $product) }}" class="body-title-2">{{ $product->name }}</a>
-                            <div class="text-tiny mt-3">{{ Str::limit($product->description, 50) }}</div>
+                            <a href="{{ route('admin.products.show', $product) }}" class="body-title-2">{{ $product->display_name }}</a>
+                            <div class="text-tiny mt-3">{{ Str::limit($product->display_description, 50) }}</div>
                         </div>
                     </td>
                     <td>${{ number_format($product->price, 2) }}</td>
                     <td>${{ number_format($product->sale_price ?? $product->price, 2) }}</td>
-                    <td>{{ $product->category->name ?? __('admin.no_data') }}</td>
+                    <td>{{ $product->category->display_name ?? __('admin.no_data') }}</td>
                     <td>{{ $product->stock ?? 0 }}</td>
                     <td>
                         <div class="list-icon-function">
-                            <a href="{{ route('admin.products.show', $product) }}" target="_blank">
+                            <a href="{{ route('admin.products.show', $product) }}">
                                 <div class="item eye">
                                     <i class="icon-eye"></i>
                                 </div>

@@ -11,13 +11,29 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description',
+        'name_ar',
+        'name_en',
+        'description_ar',
+        'description_en',
         'image',
         'status',
         'parent_id',
         'sort_order',
     ];
+
+    public function getDisplayNameAttribute()
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && !empty($this->name_ar)) return $this->name_ar;
+        if ($locale === 'en' && !empty($this->name_en)) return $this->name_en;
+    }
+
+    public function getDisplayDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && !empty($this->description_ar)) return $this->description_ar;
+        if ($locale === 'en' && !empty($this->description_en)) return $this->description_en;
+    }
 
     public function products(): HasMany
     {

@@ -5,11 +5,13 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +35,7 @@ Route::prefix('admin')->name('admin.')->middleware(['web'])->group(function () {
 });
 
 // Protected Admin Routes
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'web'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', 'admin'])->group(function () {
     
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -42,9 +44,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'web'])->group(funct
     // Resource Routes
     Route::resource('products', ProductController::class);
     Route::resource('categories', CategoryController::class);
-    Route::resource('brands', BrandController::class);
     Route::resource('orders', OrderController::class);
     Route::resource('users', UserController::class);
+    Route::resource('coupons', CouponController::class);
+    Route::resource('reviews', ReviewController::class);
     
     // Additional Routes for Products
     Route::post('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
@@ -52,9 +55,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'web'])->group(funct
     
     // Additional Routes for Categories
     Route::post('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
-    
-    // Additional Routes for Brands
-    Route::post('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
     
     // Additional Routes for Orders
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
@@ -66,10 +66,25 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'web'])->group(funct
     // Additional Routes for Users
     Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     
+    // Additional Routes for Coupons
+    Route::post('coupons/{coupon}/toggle-status', [CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
+    Route::post('coupons/bulk-action', [CouponController::class, 'bulkAction'])->name('coupons.bulk-action');
+    Route::delete('coupons/{coupon}/delete-image', [CouponController::class, 'deleteImage'])->name('coupons.delete-image');
+    
+    // Additional Routes for Reviews
+    Route::post('reviews/{review}/approve', [ReviewController::class, 'approve'])->name('reviews.approve');
+    Route::post('reviews/{review}/reject', [ReviewController::class, 'reject'])->name('reviews.reject');
+    Route::post('reviews/bulk-action', [ReviewController::class, 'bulkAction'])->name('reviews.bulk-action');
+    
     // Reports
     Route::get('reports/sales', [DashboardController::class, 'salesReport'])->name('reports.sales');
     Route::get('reports/products', [DashboardController::class, 'productsReport'])->name('reports.products');
     Route::get('reports/customers', [DashboardController::class, 'customersReport'])->name('reports.customers');
+
+    // Statistics
+    Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+    Route::get('statistics/products', [StatisticsController::class, 'products'])->name('statistics.products');
+    Route::get('statistics/users', [StatisticsController::class, 'users'])->name('statistics.users');
     
     // File Uploads
     Route::post('upload/image', [DashboardController::class, 'uploadImage'])->name('upload.image');
@@ -82,4 +97,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'web'])->group(funct
     // Profile
     Route::get('profile', [ProfileController::class, 'index'])->name('profile');
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+    
+    // Notifications
+    Route::get('notifications', [DashboardController::class, 'notifications'])->name('notifications');
+    Route::get('notifications/api', [DashboardController::class, 'getNotifications'])->name('notifications.api');
+    Route::get('notifications/header', [DashboardController::class, 'getHeaderNotifications'])->name('notifications.header');
+    Route::post('notifications/{id}/read', [DashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [DashboardController::class, 'markAllNotificationsAsRead'])->name('notifications.read-all');
+    Route::delete('notifications/{id}', [DashboardController::class, 'deleteNotification'])->name('notifications.delete');
 });

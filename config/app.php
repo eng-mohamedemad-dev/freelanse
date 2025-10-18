@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Notification Settings
+    |--------------------------------------------------------------------------
+    |
+    | These values control the stock notification thresholds for the application.
+    | You can adjust these values based on your business requirements.
+    |
+    */
+
+    'low_stock_threshold' => env('LOW_STOCK_THRESHOLD', 5),
+    'out_of_stock_threshold' => env('OUT_OF_STOCK_THRESHOLD', 0),
+
 ];

@@ -414,7 +414,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}/mark-completed`,
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -436,7 +437,8 @@ $(document).ready(function() {
                             location.reload();
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: '{{ __('admin.error') }}!',
@@ -487,7 +489,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}/mark-cancelled`,
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -509,7 +512,8 @@ $(document).ready(function() {
                             location.reload();
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: '{{ __('admin.error') }}!',
@@ -560,7 +564,8 @@ $(document).ready(function() {
                     url: `/admin/orders/${orderId}`,
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
                         Swal.fire({
@@ -582,7 +587,8 @@ $(document).ready(function() {
                             window.location.href = '{{ route("admin.orders.index") }}';
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', xhr.responseText);
                         Swal.fire({
                             icon: 'error',
                             title: '{{ __('admin.error') }}!',

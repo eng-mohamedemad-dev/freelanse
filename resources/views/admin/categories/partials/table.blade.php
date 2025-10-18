@@ -16,19 +16,19 @@
                     <td>{{ $category->id }}</td>
                     <td class="pname">
                         <div class="name">
-                            <a href="{{ route('admin.categories.show', $category) }}" class="body-title-2">{{ $category->name }}</a>
+                            <a href="{{ route('admin.categories.show', $category) }}" class="body-title-2">{{ $category->display_name }}</a>
                         </div>
                     </td>
-                    <td>{{ Str::limit($category->description, 50) }}</td>
+                    <td>{{ Str::limit($category->display_description, 50) }}</td>
                     <td>
                         <div class="image">
-                            <img src="{{ $category->image ? asset($category->image) : asset('uploads/categories/default.png') }}" alt="{{ $category->name }}" class="category-image">
+                            <img src="{{ $category->image ? asset($category->image) : asset('uploads/categories/default.png') }}" alt="{{ $category->display_name }}" class="category-image">
                         </div>
                     </td>
                     <td>{{ $category->products_count ?? 0 }}</td>
                     <td>
                         <div class="list-icon-function">
-                            <a href="{{ route('admin.categories.show', $category) }}" target="_blank">
+                            <a href="{{ route('admin.categories.show', $category) }}">
                                 <div class="item eye">
                                     <i class="icon-eye"></i>
                                 </div>

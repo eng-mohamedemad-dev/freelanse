@@ -36,20 +36,22 @@
     <div class="wg-box">
         <fieldset class="name">
             <div class="body-title">{{ __('admin.category_name') }} <span class="tf-color-1">*</span></div>
-            <input type="text" placeholder="{{ __('admin.enter_category_name') }}" name="name" tabindex="0" value="{{ old('name', $category->name) }}" aria-required="true" required>
-            <div class="text-tiny">{{ __('admin.category_name_max') }}</div>
-            @error('name')
-                <div class="text-tiny tf-color-1">{{ $message }}</div>
-            @enderror
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <input type="text" placeholder="{{ __('admin.enter_category_name') }} (AR)" name="name_ar" value="{{ old('name_ar', $category->name_ar) }}" required>
+                <input type="text" placeholder="{{ __('admin.enter_category_name') }} (EN)" name="name_en" value="{{ old('name_en', $category->name_en) }}" required>
+            </div>
+            @error('name_ar')<div class="text-tiny tf-color-1">{{ $message }}</div>@enderror
+            @error('name_en')<div class="text-tiny tf-color-1">{{ $message }}</div>@enderror
         </fieldset>
 
         <fieldset class="description">
-            <div class="body-title">{{ __('admin.category_description') }} <span class="tf-color-1">*</span></div>
-            <textarea name="description" placeholder="{{ __('admin.enter_category_description') }}" tabindex="0" aria-required="true" required>{{ old('description', $category->description) }}</textarea>
-            <div class="text-tiny">{{ __('admin.category_description_max') }}</div>
-            @error('description')
-                <div class="text-tiny tf-color-1">{{ $message }}</div>
-            @enderror
+            <div class="body-title">{{ __('admin.category_description') }}</div>
+            <div style="display:grid;grid-template-columns:1fr;gap:8px;">
+                <textarea name="description_ar" placeholder="{{ __('admin.enter_category_description') }} (AR)">{{ old('description_ar', $category->description_ar) }}</textarea>
+                <textarea name="description_en" placeholder="{{ __('admin.enter_category_description') }} (EN)">{{ old('description_en', $category->description_en) }}</textarea>
+            </div>
+            @error('description_ar')<div class="text-tiny tf-color-1">{{ $message }}</div>@enderror
+            @error('description_en')<div class="text-tiny tf-color-1">{{ $message }}</div>@enderror
         </fieldset>
     </div>
 
