@@ -76,7 +76,6 @@ return [
     'import' => 'استيراد',
     'bulk_actions' => 'إجراءات جماعية',
     'select_all' => 'تحديد الكل',
-    'no_data' => 'لا توجد بيانات',
     'loading' => 'جاري التحميل...',
     'success' => 'تم بنجاح',
     'error' => 'خطأ',
@@ -383,11 +382,8 @@ return [
     'add_user' => 'إضافة مستخدم',
     'user_details' => 'تفاصيل المستخدم',
     'back_to_users' => 'العودة للمستخدمين',
-    'name' => 'الاسم',
     'email' => 'البريد الإلكتروني',
     'phone' => 'رقم الهاتف',
-    'status' => 'الحالة',
-    'active' => 'نشط',
     'inactive' => 'غير نشط',
     'registration_date' => 'تاريخ التسجيل',
     'last_updated' => 'آخر تحديث',
@@ -400,8 +396,6 @@ return [
     'delete' => 'حذف',
     'cancel' => 'إلغاء',
     'success' => 'نجح',
-    'error' => 'خطأ',
-    'view' => 'عرض',
     'actions' => 'الإجراءات',
     
     // Settings
