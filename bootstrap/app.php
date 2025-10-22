@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // تسجيل الـ middleware للأدوار
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
         
         // تفعيل CSRF protection

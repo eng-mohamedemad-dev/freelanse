@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('coupons', function (Blueprint $table) {
             $table->id();
-            $table->string('name_ar')->nullable()->after('code');
-            $table->string('name_en')->nullable()->after('name_ar');
-            $table->text('description_ar')->nullable()->after('name_en');
-            $table->text('description_en')->nullable()->after('description_ar');
             $table->string('code')->unique(); // كود الكوبون
+            $table->string('name_ar')->nullable(); // الاسم بالعربية
+            $table->string('name_en')->nullable(); // الاسم بالإنجليزية
+            $table->text('description_ar')->nullable(); // الوصف بالعربية
+            $table->text('description_en')->nullable(); // الوصف بالإنجليزية
             $table->enum('type', ['fixed', 'percentage']); // نوع الخصم: مبلغ ثابت أو نسبة مئوية
             $table->decimal('value', 10, 2); // قيمة الخصم
             $table->decimal('minimum_amount', 10, 2)->nullable(); // الحد الأدنى للطلب

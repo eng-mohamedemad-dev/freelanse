@@ -1107,24 +1107,30 @@
                         </div>
                         <div class="center-item">
                             <ul class="menu-list">
+                                @if(auth()->user()->hasPermission('view_products') || auth()->user()->hasPermission('create_products'))
                                 <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-shopping-cart"></i></div>
                                         <div class="text">{{ __('admin.products') }}</div>
                                     </a>
                                     <ul class="sub-menu">
+                                        @if(auth()->user()->hasPermission('create_products'))
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.products.create') }}" class="">
                                                 <div class="text">{{ __('admin.add_product') }}</div>
                                             </a>
                                         </li>
+                                        @endif
+                                        @if(auth()->user()->hasPermission('view_products'))
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.products.index') }}" class="">
                                                 <div class="text">{{ __('admin.products') }}</div>
                                             </a>
                                         </li>
+                                        @endif
                                     </ul>
                                 </li>
+                                @endif
                                 <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-layers"></i></div>
@@ -1174,12 +1180,30 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="menu-item">
-                                    <a href="{{ route('admin.users.index') }}" class="">
+                                @if(auth()->user()->hasPermission('view_users') || auth()->user()->hasPermission('create_users'))
+                                <li class="menu-item has-children">
+                                    <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">{{ __('admin.users') }}</div>
                                     </a>
+                                    <ul class="sub-menu">
+                                        @if(auth()->user()->hasPermission('view_users'))
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.users.index') }}" class="">
+                                                <div class="text">{{ __('admin.all_users') }}</div>
+                                            </a>
+                                        </li>
+                                        @endif
+                                        @if(auth()->user()->hasPermission('create_users'))
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.users.create') }}" class="">
+                                                <div class="text">{{ __('admin.create_user') }}</div>
+                                            </a>
+                                        </li>
+                                        @endif
+                                    </ul>
                                 </li>
+                                @endif
                                 <li class="menu-item">
                                     <a href="{{ route('admin.reviews.index') }}" class="">
                                         <div class="icon"><i class="icon-star"></i></div>
@@ -1566,6 +1590,324 @@
     </script>
     
     @stack('scripts')
+    
+    <style>
+        /* تحسينات عامة للواجهة */
+        body {
+            font-size: 18px !important;
+            line-height: 1.6 !important;
+        }
+        
+        /* تحسين الخط في الجداول */
+        .table {
+            font-size: 18px !important;
+        }
+        
+        .table th, .table td {
+            font-size: 18px !important;
+            padding: 15px 12px !important;
+            vertical-align: middle !important;
+        }
+        
+        .table th {
+            font-weight: 700 !important;
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+        }
+        
+        /* تحسين الأزرار */
+        .btn {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
+        }
+        
+        .btn-primary {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3 !important;
+            border-color: #0056b3 !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        /* تحسين النماذج */
+        .form-control {
+            font-size: 18px !important;
+            padding: 16px 20px !important;
+            border-radius: 8px !important;
+            border: 2px solid #e9ecef !important;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+        
+        .form-label {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #495057 !important;
+            margin-bottom: 12px !important;
+        }
+        
+        /* تحسين العناوين */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700 !important;
+            color: #2c3e50 !important;
+        }
+        
+        h3 {
+            font-size: 24px !important;
+        }
+        
+        /* تحسين البطاقات */
+        .wg-box {
+            border-radius: 8px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            border: 1px solid #e9ecef !important;
+        }
+        
+        /* تحسين الشارات */
+        .badge {
+            font-size: 14px !important;
+            padding: 8px 12px !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+        }
+        
+        /* تحسين الأيقونات */
+        .list-icon-function .item {
+            font-size: 18px !important;
+            padding: 10px !important;
+            margin: 0 4px !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .list-icon-function .item:hover {
+            transform: translateY(-2px) !important;
+        }
+        
+        /* تحسين البحث */
+        .search-input {
+            font-size: 16px !important;
+            padding: 12px 16px !important;
+        }
+        
+        /* تحسين الـ breadcrumbs */
+        .breadcrumbs {
+            font-size: 16px !important;
+        }
+        
+        .breadcrumbs .text-tiny {
+            font-size: 16px !important;
+            font-weight: 500 !important;
+        }
+        
+        /* تحسين الـ pagination */
+        .pagination {
+            font-size: 16px !important;
+        }
+        
+        .pagination .page-link {
+            padding: 10px 16px !important;
+            font-size: 16px !important;
+        }
+        
+        /* تحسين الـ checkboxes */
+        .form-check-input {
+            width: 22px !important;
+            height: 22px !important;
+            margin-right: 12px !important;
+            margin-top: 2px !important;
+            vertical-align: top !important;
+            border: 2px solid #007bff !important;
+            border-radius: 4px !important;
+            background-color: white !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .form-check-input:checked {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+            background-size: 16px 16px !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+        }
+        
+        .form-check-input:hover {
+            border-color: #0056b3 !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+            border-color: #007bff !important;
+        }
+        
+        /* دعم الوضع الليلي للـ checkboxes */
+        [data-theme="dark"] .form-check-input {
+            background-color: #4a5568 !important;
+            border-color: #718096 !important;
+        }
+        
+        [data-theme="dark"] .form-check-input:checked {
+            background-color: #63b3ed !important;
+            border-color: #63b3ed !important;
+        }
+        
+        [data-theme="dark"] .form-check {
+            background-color: #2d3748 !important;
+            border-color: #4a5568 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-check:hover {
+            background-color: #4a5568 !important;
+            border-color: #63b3ed !important;
+        }
+        
+        [data-theme="dark"] .form-check-label {
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-text {
+            color: #a0aec0 !important;
+        }
+        
+        /* دعم الوضع الليلي للحقول الأخرى */
+        [data-theme="dark"] .form-control {
+            background-color: #4a5568 !important;
+            border-color: #718096 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-control:focus {
+            background-color: #4a5568 !important;
+            border-color: #63b3ed !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+        }
+        
+        [data-theme="dark"] .form-select {
+            background-color: #4a5568 !important;
+            border-color: #718096 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-select:focus {
+            background-color: #4a5568 !important;
+            border-color: #63b3ed !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+        }
+        
+        [data-theme="dark"] .wg-box {
+            background-color: #2d3748 !important;
+            border-color: #4a5568 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .permissions-container {
+            background-color: #1a202c !important;
+            border-color: #4a5568 !important;
+        }
+        
+        [data-theme="dark"] .category-title {
+            color: #e2e8f0 !important;
+            border-color: #4a5568 !important;
+        }
+        
+        /* إصلاح شامل للوضع الليلي */
+        [data-theme="dark"] body {
+            background-color: #1a202c !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .main-content {
+            background-color: #1a202c !important;
+        }
+        
+        [data-theme="dark"] .wg-box {
+            background-color: #2d3748 !important;
+            border-color: #4a5568 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select {
+            background-color: #4a5568 !important;
+            border-color: #718096 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-control:focus,
+        [data-theme="dark"] .form-select:focus {
+            background-color: #4a5568 !important;
+            border-color: #63b3ed !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+        }
+        
+        [data-theme="dark"] .form-check {
+            background-color: #2d3748 !important;
+            border-color: #4a5568 !important;
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-check:hover {
+            background-color: #4a5568 !important;
+            border-color: #63b3ed !important;
+        }
+        
+        [data-theme="dark"] .permissions-container {
+            background-color: #1a202c !important;
+            border-color: #4a5568 !important;
+        }
+        
+        [data-theme="dark"] .form-label {
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .form-text {
+            color: #a0aec0 !important;
+        }
+        
+        [data-theme="dark"] .invalid-feedback {
+            color: #fc8181 !important;
+        }
+        
+        [data-theme="dark"] .text-danger {
+            color: #fc8181 !important;
+        }
+        
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] h6 {
+            color: #e2e8f0 !important;
+        }
+        
+        [data-theme="dark"] .breadcrumbs .text-tiny {
+            color: #a0aec0 !important;
+        }
+        
+        [data-theme="dark"] .breadcrumbs a {
+            color: #63b3ed !important;
+        }
+        
+        [data-theme="dark"] .breadcrumbs a:hover {
+            color: #90cdf4 !important;
+        }
+    </style>
 </body>
 
 </html>

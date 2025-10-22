@@ -80,6 +80,12 @@
                                     <i class="icon-trash"></i>
                                 </a>
                             @elseif($order->status === 'processing')
+                                <a href="#" class="item ship ship-order" 
+                                   data-order-id="{{ $order->id }}" 
+                                   data-order-number="{{ $order->id }}"
+                                   title="{{ __('admin.mark_as_shipped') }}">
+                                    <i class="icon-truck"></i>
+                                </a>
                                 <a href="#" class="item approve approve-order" 
                                    data-order-id="{{ $order->id }}" 
                                    data-order-number="{{ $order->id }}"

@@ -34,6 +34,13 @@
             </form>
         </div>
         
+        <div class="wg-actions">
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-lg">
+                <i class="icon-plus"></i>
+                {{ __('admin.create_user') }}
+            </a>
+        </div>
+        
     </div>
     
     <!-- Users Table -->
@@ -54,6 +61,53 @@
 
 @push('styles')
 <style>
+    /* تحسين زر الإضافة */
+    .wg-actions .btn-primary {
+        font-size: 18px !important;
+        padding: 15px 30px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .wg-actions .btn-primary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4) !important;
+    }
+    
+    .wg-actions .btn-primary i {
+        font-size: 20px !important;
+        margin-right: 8px !important;
+    }
+    
+    /* تحسين الخط العام */
+    .wg-box {
+        font-size: 16px !important;
+    }
+    
+    .table th, .table td {
+        font-size: 16px !important;
+        padding: 12px 8px !important;
+    }
+    
+    .table th {
+        font-weight: 700 !important;
+        background-color: #f8f9fa !important;
+    }
+    
+    .badge {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+        font-weight: 600 !important;
+    }
+    
+    .list-icon-function .item {
+        font-size: 18px !important;
+        padding: 8px !important;
+        margin: 0 4px !important;
+    }
+    
     /* Table Font Size */
     .table {
         font-size: 16px !important;

@@ -20,10 +20,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Seed sizes and colors
+        // Seed sizes, colors, and permissions
         $this->call([
             SizeSeeder::class,
             ColorSeeder::class,
+            PermissionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

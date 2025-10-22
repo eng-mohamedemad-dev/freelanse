@@ -41,12 +41,12 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', 'admin'])->gr
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('sales-data', [DashboardController::class, 'getSalesData'])->name('dashboard.sales-data');
     
-    // Resource Routes
-    Route::resource('products', ProductController::class);
-    Route::resource('categories', CategoryController::class);
-    Route::resource('orders', OrderController::class);
-    Route::resource('users', UserController::class);
-    Route::resource('coupons', CouponController::class);
+    // Resource Routes with Permissions
+    Route::resource('products', ProductController::class)->middleware('permission:view_products');
+    Route::resource('categories', CategoryController::class)->middleware('permission:view_categories');
+    Route::resource('orders', OrderController::class)->middleware('permission:view_orders');
+    Route::resource('users', UserController::class)->middleware('permission:view_users');
+    Route::resource('coupons', CouponController::class)->middleware('permission:view_coupons');
     Route::resource('reviews', ReviewController::class);
     
     // Additional Routes for Products

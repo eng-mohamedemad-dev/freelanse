@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,8 @@ class User extends Authenticatable
         'role',
         'phone',
         'avatar',
+        'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -46,6 +49,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -58,11 +63,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is customer
+     * Check if user is manager
      */
-    public function isCustomer(): bool
+    public function isManager(): bool
     {
-        return $this->role === 'customer';
+        return $this->role === 'manager';
+    }
+
+    /**
+     * Check if user is regular user
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
     }
 
     /**
@@ -72,7 +85,8 @@ class User extends Authenticatable
     {
         return match($this->role) {
             'admin' => 'مدير',
-            'customer' => 'عميل',
+            'manager' => 'مدير فرعي',
+            'user' => 'مستخدم',
             default => 'غير محدد'
         };
     }
@@ -86,10 +100,64 @@ class User extends Authenticatable
     }
 
     /**
-     * Scope for customer users
+     * Scope for manager users
      */
-    public function scopeCustomers($query)
+    public function scopeManagers($query)
     {
-        return $query->where('role', 'customer');
+        return $query->where('role', 'manager');
+    }
+
+    /**
+     * Scope for regular users
+     */
+    public function scopeUsers($query)
+    {
+        return $query->where('role', 'user');
+    }
+
+    /**
+     * العلاقة مع الصلاحيات
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions')
+                    ->withPivot(['is_granted', 'granted_at', 'revoked_at'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * التحقق من وجود صلاحية معينة
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return $this->permissions()
+                    ->where('slug', $permissionSlug)
+                    ->wherePivot('is_granted', true)
+                    ->exists();
+    }
+
+    /**
+     * منح صلاحية للمستخدم
+     */
+    public function grantPermission(Permission $permission): void
+    {
+        $this->permissions()->syncWithoutDetaching([
+            $permission->id => [
+                'is_granted' => true,
+                'granted_at' => now(),
+                'revoked_at' => null
+            ]
+        ]);
+    }
+
+    /**
+     * إلغاء صلاحية من المستخدم
+     */
+    public function revokePermission(Permission $permission): void
+    {
+        $this->permissions()->updateExistingPivot($permission->id, [
+            'is_granted' => false,
+            'revoked_at' => now()
+        ]);
     }
 }
